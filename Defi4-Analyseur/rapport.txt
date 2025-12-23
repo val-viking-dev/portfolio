@@ -1,0 +1,39 @@
+=== RAPPORT D'ANALYSE ===
+Fichier analysé : texte_test.txt
+Nombre total de mots: 49
+
+=== MOTS LES PLUS FRÉQUENTS ===
+Mots les plus fréquents: 1. python : 8 occurrences
+2. est : 5 occurrences
+3. programmation : 2 occurrences
+4. pour : 2 occurrences
+5. des : 2 occurrences
+6. et : 2 occurrences
+7. un : 1 occurrences
+8. langage : 1 occurrences
+9. de : 1 occurrences
+10. très : 1 occurrences
+11. populaire : 1 occurrences
+12. utilisé : 1 occurrences
+13. créer : 1 occurrences
+14. applications : 1 occurrences
+15. web : 1 occurrences
+16. scripts : 1 occurrences
+17. les : 1 occurrences
+18. développeurs : 1 occurrences
+19. aiment : 1 occurrences
+20. car : 1 occurrences
+21. simple : 1 occurrences
+22. puissant : 1 occurrences
+23. apprendre : 1 occurrences
+24. une : 1 occurrences
+25. excellente : 1 occurrences
+26. idée : 1 occurrences
+27. débuter : 1 occurrences
+28. en : 1 occurrences
+29. partout : 1 occurrences
+30. dans : 1 occurrences
+31. le : 1 occurrences
+32. monde : 1 occurrences
+33. du : 1 occurrences
+34. développement : 1 occurrences

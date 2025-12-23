@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <header>
+        <h1>Bienvenue sur mon Quizz ! 💻 </h1>
+    </header>
+    <div class="conteneur">
+        <div class="colonne-gauche">
+            <h2>Historique de score</h2>
+            <ol id="listeScores">
+
+            </ol>
+
+        </div>
+        <div class="zone-principale">
+            <!--Zone d'accueil-->
+            <div id="accueil">
+                <h2>Accueil du questionnaire 🖋</h2>
+                <p>Bonjour, bienvenue sur mon quiz de culture générale ! 🌍<br>
+                    Ce projet est né de ma reconversion en développement web. Parti de zéro en JavaScript, j'ai créé ce
+                    quiz pour apprendre en m'amusant.📖<br>
+                    Teste tes connaissances avec 10 questions sur l'histoire, la géographie et les sciences. Chaque
+                    partie propose un mélange différent pour varier les plaisirs ! 🧠<br>
+                    Prêt à relever le défi ? 💪
+                </p>
+                <button id="btnQuizz">COMMENCER LE QUIZZ</button>
+
+            </div>
+            <!-- Zone questionnaire -->
+            <div id="questionnaire">
+                <div id="chronoScore">
+                    <span id="chrono">
+
+                    </span>
+                    <span id="score">
+
+                    </span>
+
+                </div>
+                <div id="question">
+
+                </div>
+                <div id="feedbackPopup">
+                    <p id="messageFeedback"></p>
+                </div>
+                <!--Choix des questions -->
+                <div id="choixQuestion">
+                    <label>
+                        <input type="radio" name="reponse" value="0">
+                        <span class="texteReponse"></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="reponse" value="1">
+                        <span class="texteReponse"></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="reponse" value="2">
+                        <span class="texteReponse"></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="reponse" value="3">
+                        <span class="texteReponse"></span>
+                    </label>
+
+                </div>
+                <button id="btnValider">Valider ✅ </button>
+
+            </div>
+            <!-- Zone écran de fin -->
+            <div id="ecranFin">
+                <h2>Score final ! 🥁</h2>
+                <div id="scoreFinal"></div>
+                <div id="tempsTotal"></div>
+                <p id="messageFinal"></p>
+                <div id="resumeRep">
+                    <h3>Détail de tes réponses : </h3>
+                    <ol id="listeResume">
+
+                    </ol>
+
+                </div>
+
+                <button id="btnRecommencer">Recommencer un nouveau Quizz 🔄 </button>
+                <button id="btnAccueil">Accueil</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js">
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #FFAA7F;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+.calculatrice {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    width: 320px;
+}
+.ecran {
+    background-color: #222;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: right;
+    min-height: 80px;
+}
+.historique {
+    font-size: 14px;
+    color: #999;
+    min-height: 20px;
+    margin-bottom: 5px;
+}
+.affichage {
+    font-size: 36px;
+    font-weight: bold;
+    word-wrap: break-word;
+}
+.boutons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+button {
+    padding: 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+button:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+}
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+header h1 {
+    text-shadow: #222;
+    font-size: 50px;
+}
+header p {
+    font-size: 20px;
+}
+.operation {
+    background-color: #ff9500;
+    color: white;
+    font-weight: bold;
+}
+.clear {
+    background-color: #f44336;
+    color: white;
+    font-weight: bold;
+}
+.egal {
+    background-color: #2196f3;
+    color: white;
+    font-weight: bold;
+}
+.operation:hover {
+    background-color: #ff5500;
+}
+.clear:hover {
+    background-color: #ff0000;
+}
+.egal:hover {
+    background-color: #0055FF;
+}

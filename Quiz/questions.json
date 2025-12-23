@@ -1,0 +1,252 @@
+[
+  {
+    "question": "Quelle est la capitale de la France 🟦⬜🟥 ?",
+    "choix": ["Marseille", "Lyon", "Bordeaux", "Paris"],
+    "reponse": "Paris"
+  },
+  {
+    "question": "En quelle année a eu lieu la Révolution française ⚔️ ?",
+    "choix": ["1789", "1799", "1776", "1804"],
+    "reponse": "1789"
+  },
+  {
+    "question": "Quel est le plus grand océan du monde 🌍 ?",
+    "choix": ["Océan Atlantique", "Océan Indien", "Océan Pacifique", "Océan Arctique"],
+    "reponse": "Océan Pacifique"
+  },
+  {
+    "question": "Combien de planètes compose notre système solaire 🌕 ?",
+    "choix": ["7", "8", "9", "10"],
+    "reponse": "8"
+  },
+  {
+    "question": "Qui a peint la Joconde 🖼️ ?",
+    "choix": ["Picasso", "Van Gogh", "Léonard de Vinci", "Michel-Ange"],
+    "reponse": "Léonard de Vinci"
+  },
+  {
+    "question": "Quelle est la capitale de l'Espagne ⬛🟥🟨 ?",
+    "choix": ["Barcelone", "Madrid", "Séville", "Valence"],
+    "reponse": "Madrid"
+  },
+  {
+    "question": "Quel gaz les plantes absorbent-elles pour la photosynthèse 🌿 ?",
+    "choix": ["Oxygène", "Azote", "Dioxyde de carbone", "Hydrogène"],
+    "reponse": "Dioxyde de carbone"
+  },
+  {
+    "question": "En quelle année l'homme a-t-il marché sur la Lune 🌙 ?",
+    "choix": ["1965", "1969", "1972", "1975"],
+    "reponse": "1969"
+  },
+  {
+    "question": "Quel est le plus long fleuve du monde 🌊 ?",
+    "choix": ["Le Nil", "L'Amazone", "Le Yangtsé", "Le Mississippi"],
+    "reponse": "L'Amazone"
+  },
+  {
+    "question": "Combien d'os compte le corps humain adulte 🦴 ?",
+    "choix": ["186", "206", "226", "246"],
+    "reponse": "206"
+  },
+  {
+    "question": "Qui était le premier empereur romain 🏟️  ?",
+    "choix": ["Jules César", "Auguste", "Néron", "Caligula"],
+    "reponse": "Auguste"
+  },
+  {
+    "question": "Quelle est la plus haute montagne du monde ⛰️ ?",
+    "choix": ["K2", "Mont Blanc", "Everest", "Kilimandjaro"],
+    "reponse": "Everest"
+  },
+  {
+    "question": "Quelle est la vitesse de la lumière 🏎️💨 ?",
+    "choix": ["300 000 km/s", "150 000 km/s", "500 000 km/s", "200 000 km/s"],
+    "reponse": "300 000 km/s"
+  },
+  {
+    "question": "En quelle année a débuté la Première Guerre mondiale 💥 ?",
+    "choix": ["1912", "1914", "1916", "1918"],
+    "reponse": "1914"
+  },
+  {
+    "question": "Quel est le plus petit pays du monde 🤏 ?",
+    "choix": ["Monaco", "Saint-Marin", "Vatican", "Liechtenstein"],
+    "reponse": "Vatican"
+  },
+  {
+    "question": "Combien de dents a un adulte 🦷 ?",
+    "choix": ["28", "30", "32", "34"],
+    "reponse": "32"
+  },
+  {
+    "question": "Qui a découvert l'Amérique en 1492 🚣‍♀️ ?",
+    "choix": ["Vasco de Gama", "Christophe Colomb", "Magellan", "Amerigo Vespucci"],
+    "reponse": "Christophe Colomb"
+  },
+  {
+    "question": "Quelle est la capitale de l'Italie 🟩⬜🟥 ?",
+    "choix": ["Milan", "Venise", "Rome", "Florence"],
+    "reponse": "Rome"
+  },
+  {
+    "question": "Quel est l'élément chimique de symbole O 🔬 ?",
+    "choix": ["Or", "Osmium", "Oxygène", "Oganesson"],
+    "reponse": "Oxygène"
+  },
+  {
+    "question": "Combien de continents existe-t-il sur Terre 🗺️ ?",
+    "choix": ["5", "6", "7", "8"],
+    "reponse": "7"
+  },
+  {
+    "question": "En quelle année est tombé le mur de Berlin 🧱🔨 ?",
+    "choix": ["1987", "1989", "1991", "1993"],
+    "reponse": "1989"
+  },
+  {
+    "question": "Quel est le plus grand désert du monde 🏜️ ?",
+    "choix": ["Sahara", "Gobi", "Antarctique", "Arabie"],
+    "reponse": "Antarctique"
+  },
+  {
+    "question": "Quelle planète est surnommée la planète rouge 🪐 ?",
+    "choix": ["Vénus", "Mars", "Jupiter", "Saturne"],
+    "reponse": "Mars"
+  },
+  {
+    "question": "Qui a écrit 'Les Misérables' ✍️ ?",
+    "choix": ["Émile Zola", "Victor Hugo", "Gustave Flaubert", "Alexandre Dumas"],
+    "reponse": "Victor Hugo"
+  },
+  {
+    "question": "Quelle est la capitale du Japon 🎌 ?",
+    "choix": ["Kyoto", "Osaka", "Tokyo", "Hiroshima"],
+    "reponse": "Tokyo"
+  },
+  {
+    "question": "Combien fait la racine carrée de 144 🧮 ?",
+    "choix": ["10", "11", "12", "13"],
+    "reponse": "12"
+  },
+  {
+    "question": "En quelle année a eu lieu la prise de la Bastille 🗡️🏰 ?",
+    "choix": ["1788", "1789", "1790", "1791"],
+    "reponse": "1789"
+  },
+  {
+    "question": "Quel océan borde la côte ouest de l'Afrique 🦓 ?",
+    "choix": ["Océan Indien", "Océan Atlantique", "Océan Pacifique", "Océan Arctique"],
+    "reponse": "Océan Atlantique"
+  },
+  {
+    "question": "Quel est le symbole chimique de l'or 💰 ?",
+    "choix": ["Or", "Au", "Ag", "Go"],
+    "reponse": "Au"
+  },
+  {
+    "question": "Qui a inventé l'ampoule électrique 💡 ?",
+    "choix": ["Nikola Tesla", "Thomas Edison", "Alexander Bell", "Benjamin Franklin"],
+    "reponse": "Thomas Edison"
+  },
+  {
+    "question": "Quelle est la capitale de l'Allemagne ⬛🟥🟨 ?",
+    "choix": ["Munich", "Hambourg", "Berlin", "Francfort"],
+    "reponse": "Berlin"
+  },
+  {
+    "question": "Combien de côtés a un hexagone 📐 ?",
+    "choix": ["5", "6", "7", "8"],
+    "reponse": "6"
+  },
+  {
+    "question": "Quel roi de France était surnommé le Roi-Soleil ⚜️☀️?",
+    "choix": ["Louis XIII", "Louis XIV", "Louis XV", "Louis XVI"],
+    "reponse": "Louis XIV"
+  },
+  {
+    "question": "Dans quel pays se trouve la tour de Pise 🏗️ ?",
+    "choix": ["France", "Espagne", "Italie", "Grèce"],
+    "reponse": "Italie"
+  },
+  {
+    "question": "Quelle est la formule chimique de l'eau 💧 ?",
+    "choix": ["H2O", "CO2", "O2", "H2O2"],
+    "reponse": "H2O"
+  },
+  {
+    "question": "En quelle année a été créé Internet 🌐 ?",
+    "choix": ["1969", "1979", "1989", "1999"],
+    "reponse": "1969"
+  },
+  {
+    "question": "Quelle est la capitale de la Belgique ⬛🟥🟨 ?",
+    "choix": ["Bruges", "Anvers", "Bruxelles", "Gand"],
+    "reponse": "Bruxelles"
+  },
+  {
+    "question": "Combien de minutes contient une heure 🕒 ?",
+    "choix": ["50", "60", "70", "80"],
+    "reponse": "60"
+  },
+  {
+    "question": "Qui a découvert la pénicilline 💊 ?",
+    "choix": ["Louis Pasteur", "Alexander Fleming", "Marie Curie", "Albert Einstein"],
+    "reponse": "Alexander Fleming"
+  },
+  {
+    "question": "Quel pays a pour capitale Lisbonne 🏙️ ?",
+    "choix": ["Espagne", "Portugal", "Italie", "Grèce"],
+    "reponse": "Portugal"
+  },
+  {
+    "question": "Combien de jours compte une année bissextile 🗓️ ?",
+    "choix": ["364", "365", "366", "367"],
+    "reponse": "366"
+  },
+  {
+    "question": "Qui a peint la Chapelle Sixtine 🎨 ?",
+    "choix": ["Raphaël", "Donatello", "Michel-Ange", "Botticelli"],
+    "reponse": "Michel-Ange"
+  },
+  {
+    "question": "Quelle est la capitale de la Suisse 🍫 ?",
+    "choix": ["Zurich", "Genève", "Berne", "Lausanne"],
+    "reponse": "Berne"
+  },
+  {
+    "question": "Quel est le plus grand mammifère marin 🐟 ?",
+    "choix": ["Requin baleine", "Baleine bleue", "Cachalot", "Orque"],
+    "reponse": "Baleine bleue"
+  },
+  {
+    "question": "En quelle année a eu lieu la bataille de Waterloo 📅 ?",
+    "choix": ["1805", "1810", "1815", "1820"],
+    "reponse": "1815"
+  },
+  {
+    "question": "Quel est le point culminant de France ⛰️ ?",
+    "choix": ["Mont Blanc", "Mont Ventoux", "Pic du Midi", "Vignemale"],
+    "reponse": "Mont Blanc"
+  },
+  {
+    "question": "Quelle est la température d'ébullition de l'eau 🍲 ?",
+    "choix": ["90°C", "100°C", "110°C", "120°C"],
+    "reponse": "100°C"
+  },
+  {
+    "question": "Qui était le dieu principal de la mythologie grecque 🔱 ?",
+    "choix": ["Poséidon", "Hadès", "Zeus", "Apollon"],
+    "reponse": "Zeus"
+  },
+  {
+    "question": "Dans quel pays se trouve le Taj Mahal 🛕?",
+    "choix": ["Pakistan", "Inde", "Bangladesh", "Népal"],
+    "reponse": "Inde"
+  },
+  {
+    "question": "Combien de faces a un cube 📦 ?",
+    "choix": ["4", "6", "8", "12"],
+    "reponse": "6"
+  }
+]
