@@ -6,9 +6,9 @@
  * 
  * ⚠️ IMPORTANT : Ce fichier utilise vos variables existantes (SPREADSHEET_ID, CONFIG)
  * 
- * Auteur: Valentin
+ * Auteur: Noemie
  * Projet: Inventaire XWB BARQUE Operations
- * Date: Novembre 2025
+ * Date: Decembre 2025
  */
 
 /**
@@ -161,9 +161,7 @@ function getMallettesDataForDashboard(sheetInventaire, sheetSuivi) {
   }
 }
 
-/**
- * Récupère les infos du dernier contrôle pour une mallette
- */
+
 /**
  * Récupère les infos du dernier contrôle pour une mallette
  */
@@ -192,11 +190,13 @@ function getLastControlForMallette(sheetSuivi, malletteName) {
         const dateValue = data[i][0]; // Colonne A : Date/Heure
         const controleurName = data[i][1]; // Colonne B : Nom/Prénom
         const nbManquants = data[i][4] || 0; // Colonne E (index 4)
+
         
         // S'assurer que nbManquants est un nombre
         const nbManquantsNumber = typeof nbManquants === 'number' 
           ? nbManquants 
           : parseInt(nbManquants) || 0;
+        
         
         // ========================================================================
         // CORRECTION : Parser la date correctement (objet Date OU texte avec \n)
@@ -234,13 +234,32 @@ function getLastControlForMallette(sheetSuivi, malletteName) {
         
         const today = new Date();
         
-        // Vérifier si le contrôle a été fait AUJOURD'HUI
-        const controlDateOnly = new Date(controlDate.getFullYear(), controlDate.getMonth(), controlDate.getDate());
-        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const verifieeAujourdhui = controlDateOnly.getTime() === todayDateOnly.getTime();
+        // ========================================================================
+        // CALCUL DES JOURS AVEC RESET À 06H00
+        // ========================================================================
+        const RESET_HOUR = 6; // Heure de début du "jour de travail"
         
-        const diffTime = Math.abs(today - controlDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // Fonction pour calculer le "jour de travail" (qui commence à 06h00)
+        function getWorkDay(date) {
+          const workDay = new Date(date);
+          // Si on est avant 06h00, on est encore dans le "jour précédent"
+          if (date.getHours() < RESET_HOUR) {
+            workDay.setDate(workDay.getDate() - 1);
+          }
+          // Retourner la date normalisée à 06h00
+          return new Date(workDay.getFullYear(), workDay.getMonth(), workDay.getDate(), RESET_HOUR, 0, 0);
+        }
+        
+        // Calculer les "jours de travail"
+        const todayWorkDay = getWorkDay(today);
+        const controlWorkDay = getWorkDay(controlDate);
+        
+        // Comparer les "jours de travail"
+        const verifieeAujourdhui = todayWorkDay.getTime() === controlWorkDay.getTime();
+        
+        // Calculer la différence en jours (basé sur les "jours de travail")
+        const diffTime = Math.abs(todayWorkDay - controlWorkDay);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         
         // État basé sur manquants ET vérification aujourd'hui
         let etat;
@@ -289,17 +308,6 @@ function getLastControlForMallette(sheetSuivi, malletteName) {
   }
 }
   
-  // Aucun contrôle trouvé
-  return {
-    date: 'Jamais',
-    controleur: '-',
-    nbManquants: 0,
-    etat: '❌ Non vérifié',
-    joursDepuis: '---',
-    actionRequise: 'Contrôler',
-    verifieeAujourdhui: false
-  };
-}
 
 /**
  * Crée l'en-tête du dashboard
@@ -505,8 +513,8 @@ function createAlertesSection(sheet, mallettes) {
     alertes.push(`⚠️ ${m.nom} : ${m.manquants} outil(s) manquant(s)`);
   });
   
-  // Mallettes non vérifiées depuis longtemps (>30 jours)
-  mallettes.filter(m => typeof m.joursDepuis === 'number' && m.joursDepuis > 30).forEach(m => {
+  // Mallettes non vérifiées depuis longtemps (>10 jours)
+  mallettes.filter(m => typeof m.joursDepuis === 'number' && m.joursDepuis > 10).forEach(m => {
     alertes.push(`📅 ${m.nom} : Dernier contrôle il y a ${m.joursDepuis} jours`);
   });
   
@@ -613,11 +621,37 @@ function calculateMallettesCeMois() {
       const mallette = data[i][2];   // Colonne C : MALLETTE contrôlée
       
       if (dateValue && mallette) {
-        const controlDate = new Date(dateValue);
+        // ========================================================================
+        // CORRECTION : Parser la date correctement (objet Date OU texte avec \n)
+        // ========================================================================
+        let controlDate;
+        
+        if (dateValue instanceof Date) {
+          controlDate = dateValue;
+        } else if (typeof dateValue === 'string') {
+          const dateStr = dateValue.toString().replace('\n', ' ');
+          const parts = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+          
+          if (parts) {
+            const [, day, month, year, hour, minute, second] = parts;
+            controlDate = new Date(year, month - 1, day, hour, minute, second);
+          } else {
+            controlDate = new Date(dateValue);
+          }
+        } else {
+          controlDate = new Date(dateValue);
+        }
+        
+        // Vérifier que la date est valide
+        if (isNaN(controlDate.getTime())) {
+          console.warn(`⚠️ Date invalide ligne ${i}: ${dateValue}`);
+          continue;
+        }
+        // ========================================================================
         
         // Si la date du contrôle est dans le mois en cours
         if (controlDate >= firstDayOfMonth && controlDate <= now) {
-          count++; // ← Compte CHAQUE ligne = CHAQUE mallette
+          count++; // Compte CHAQUE ligne = CHAQUE mallette
         }
       }
     }
@@ -627,6 +661,7 @@ function calculateMallettesCeMois() {
     
   } catch (error) {
     console.error("❌ Erreur calcul mallettes ce mois:", error);
+    console.error("Stack:", error.stack);
     return 0;
   }
 }
