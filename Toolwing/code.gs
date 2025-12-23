@@ -51,16 +51,6 @@ function getMallettesFromSheet(sheet) {
   }
 }
 
-/**
- * Nettoie un formulaire Google Forms
- */
-function clearForm(form) {
-  const items = form.getItems();
-  items.forEach(item => {
-    form.deleteItem(item);
-  });
-  console.log("🧹 Formulaire nettoyé");
-}
 
 /**
  * Crée ou récupère la feuille de suivi
@@ -444,311 +434,714 @@ function sendNotificationEmail(formData) {
     // Ne pas faire échouer la soumission si l'email ne part pas
   }
 }
+
+// ==========================================
+// RAPPORT HEBDOMADAIRE - NOUVELLES FONCTIONS
+// ==========================================
+
 /**
- * Envoie le rapport quotidien de contrôle à 16h00
- * Cette fonction doit être configurée avec un trigger quotidien
+ * Calcule les dates de la semaine précédente (lundi-vendredi)
+ * Retourne un objet avec startDate, endDate, weekNumber, year, formattedPeriod
  */
-function sendDailyReport() {
+function getPreviousWeekDates() {
   try {
-    console.log("📧 Génération du rapport quotidien...");
+    const today = new Date();
     
+    // Calculer le lundi de la semaine précédente
+    const dayOfWeek = today.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : (dayOfWeek - 1) + 7; // Si dimanche = 6 jours, sinon (jour - lundi) + 7
+    
+    const previousMonday = new Date(today);
+    previousMonday.setDate(today.getDate() - daysToSubtract);
+    previousMonday.setHours(0, 0, 0, 0);
+    
+    // Calculer le vendredi de la semaine précédente
+    const previousFriday = new Date(previousMonday);
+    previousFriday.setDate(previousMonday.getDate() + 4);
+    previousFriday.setHours(23, 59, 59, 999);
+    
+    // Calculer le numéro de semaine ISO
+    const weekNumber = getWeekNumber(previousMonday);
+    const year = previousMonday.getFullYear();
+    
+    // Format pour affichage
+    const formattedStart = Utilities.formatDate(previousMonday, Session.getScriptTimeZone(), 'dd/MM');
+    const formattedEnd = Utilities.formatDate(previousFriday, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+    const formattedPeriod = `${formattedStart} - ${formattedEnd}`;
+    
+    return {
+      startDate: previousMonday,
+      endDate: previousFriday,
+      weekNumber: weekNumber,
+      year: year,
+      formattedPeriod: formattedPeriod
+    };
+    
+  } catch (error) {
+    console.error("❌ Erreur getPreviousWeekDates:", error);
+    throw error;
+  }
+}
+
+/**
+ * Calcule le numéro de semaine ISO
+ */
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+/**
+ * Calcule les manquants sans doublons (dernier état de chaque mallette)
+ */
+function calculateManquantsSansDoublonsWeek(startDate, endDate) {
+  try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheetSuivi = ss.getSheetByName(CONFIG.sheets.suivi);
-    const sheetInventaire = ss.getSheetByName(CONFIG.sheets.inventaire);
+    const suiviSheet = ss.getSheetByName(CONFIG.sheets.suivi);
     
-    if (!sheetSuivi || !sheetInventaire) {
-      console.error("❌ Feuilles introuvables");
-      return;
+    if (!suiviSheet) {
+      throw new Error("Feuille Suivi_WebApp introuvable");
     }
     
-    // Récupérer la date d'aujourd'hui (sans heure)
-    const today = new Date();
-    const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const data = suiviSheet.getDataRange().getValues();
     
-    // Récupérer toutes les données du suivi
-    const dataSuivi = sheetSuivi.getDataRange().getValues();
+    // Grouper par mallette et garder le dernier contrôle
+    const dernierControleParMallette = {};
     
-    // Récupérer toutes les mallettes
-    const toutesMallettes = getMallettesDataForDashboard(sheetInventaire, sheetSuivi);
-    
-    // 1. MALLETTES VÉRIFIÉES AUJOURD'HUI
-    const mallettesVerifieesAujourdhui = [];
-    const manquantsAujourdhui = [];
-    const signalementsAujourdhui = [];
-    
-    for (let i = 1; i < dataSuivi.length; i++) {
-      const dateControl = new Date(dataSuivi[i][0]);
-      const dateControlOnly = new Date(dateControl.getFullYear(), dateControl.getMonth(), dateControl.getDate());
+    for (let i = 1; i < data.length; i++) {
+      const dateValue = data[i][0];
+      let dateControl;
       
-      if (dateControlOnly.getTime() === todayDateOnly.getTime()) {
-        const mallette = dataSuivi[i][2];
-        const controleur = dataSuivi[i][1];
-        const manquants = dataSuivi[i][3];
-        const nbManquants = dataSuivi[i][4] || 0;
-        const listeManquants = dataSuivi[i][5] || '';
-        const typeSignalement = dataSuivi[i][6] || '';
-        const urgence = dataSuivi[i][7] || '';
-        const description = dataSuivi[i][8] || '';
+      if (dateValue instanceof Date) {
+        dateControl = dateValue;
+      } else if (typeof dateValue === 'string') {
+        const dateStr = dateValue.toString().replace('\n', ' ');
+        const parts = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (parts) {
+          const [, day, month, year, hour, minute, second] = parts;
+          dateControl = new Date(year, month - 1, day, hour, minute, second);
+        } else {
+          dateControl = new Date(dateValue);
+        }
+      } else {
+        dateControl = new Date(dateValue);
+      }
+      
+      // Vérifier que dans la période
+      if (dateControl >= startDate && dateControl <= endDate) {
+        const mallette = data[i][2];
+        const nbManquants = data[i][4] || 0;
+        const listeManquants = data[i][5] || '';
         
-        mallettesVerifieesAujourdhui.push({
-          mallette: mallette,
-          controleur: controleur,
-          heure: Utilities.formatDate(dateControl, Session.getScriptTimeZone(), 'HH:mm'),
-          manquants: manquants === 'OUI',
-          nbManquants: nbManquants
-        });
-        
-        if (manquants === 'OUI' && nbManquants > 0) {
-          manquantsAujourdhui.push({
-            mallette: mallette,
+        // Garder le dernier contrôle
+        if (!dernierControleParMallette[mallette] || dateControl > dernierControleParMallette[mallette].date) {
+          dernierControleParMallette[mallette] = {
+            date: dateControl,
             nbManquants: nbManquants,
-            liste: listeManquants
-          });
+            listeManquants: listeManquants
+          };
+        }
+      }
+    }
+    
+    // Calculer le total et la liste
+    let totalManquants = 0;
+    const mallettesAvecManquants = [];
+    
+    for (const mallette in dernierControleParMallette) {
+      const ctrl = dernierControleParMallette[mallette];
+      if (ctrl.nbManquants > 0) {
+        totalManquants += ctrl.nbManquants;
+        mallettesAvecManquants.push({
+          nom: mallette,
+          nbManquants: ctrl.nbManquants,
+          listeOutils: ctrl.listeManquants,
+          derniereDate: Utilities.formatDate(ctrl.date, Session.getScriptTimeZone(), 'dd/MM/yyyy')
+        });
+      }
+    }
+    
+    return {
+      totalManquants: totalManquants,
+      mallettesAvecManquants: mallettesAvecManquants
+    };
+    
+  } catch (error) {
+    console.error("❌ Erreur calculateManquantsSansDoublonsWeek:", error);
+    throw error;
+  }
+}
+
+/**
+ * Calcule la conformité et les jours non-conformes par mallette
+ */
+function calculateNonConformitesWeek(startDate, endDate) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const suiviSheet = ss.getSheetByName(CONFIG.sheets.suivi);
+    const inventaireSheet = ss.getSheetByName(CONFIG.sheets.inventaire);
+    
+    if (!suiviSheet || !inventaireSheet) {
+      throw new Error("Feuilles introuvables");
+    }
+    
+    const data = suiviSheet.getDataRange().getValues();
+    const mallettesInfo = getMallettesFromSheet(inventaireSheet);
+    
+    // Créer un map mallette -> nombre total d'outils
+    const nbOutilsParMallette = {};
+    mallettesInfo.forEach(m => {
+      nbOutilsParMallette[m.nom] = m.nombreOutils;
+    });
+    
+    // Jours ouvrés de la semaine (lundi = 1, vendredi = 5)
+    const joursOuvres = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+    const joursOuvresMap = {};
+    
+    for (let i = 0; i < 5; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      joursOuvresMap[date.toDateString()] = joursOuvres[i];
+    }
+    
+    // Analyser chaque mallette
+    const mallettesDetail = [];
+    
+    mallettesInfo.forEach(malletteInfo => {
+      const mallette = malletteInfo.nom;
+      const nbOutilsTotal = nbOutilsParMallette[mallette] || 0;
+      
+      const controlesParJour = {};
+      const joursNonConformes = [];
+      let conformiteJours = 0;
+      
+      // Collecter tous les contrôles de cette mallette dans la semaine
+      for (let i = 1; i < data.length; i++) {
+        const dateValue = data[i][0];
+        let dateControl;
+        
+        if (dateValue instanceof Date) {
+          dateControl = dateValue;
+        } else if (typeof dateValue === 'string') {
+          const dateStr = dateValue.toString().replace('\n', ' ');
+          const parts = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+          if (parts) {
+            const [, day, month, year, hour, minute, second] = parts;
+            dateControl = new Date(year, month - 1, day, hour, minute, second);
+          } else {
+            dateControl = new Date(dateValue);
+          }
+        } else {
+          dateControl = new Date(dateValue);
         }
         
+        if (dateControl >= startDate && dateControl <= endDate && data[i][2] === mallette) {
+          const jourKey = dateControl.toDateString();
+          const nbManquants = data[i][4] || 0;
+          const typeSignalement = data[i][6] || '';
+          
+          // Vérifier si "Départ en métrologie" (ne compte pas comme non-conforme)
+          const isDepartMetrologie = typeSignalement && typeSignalement.toLowerCase().includes('métrologie');
+          
+          if (!controlesParJour[jourKey] || dateControl > controlesParJour[jourKey].date) {
+            controlesParJour[jourKey] = {
+              date: dateControl,
+              nbManquants: nbManquants,
+              isDepartMetrologie: isDepartMetrologie
+            };
+          }
+        }
+      }
+      
+      // Vérifier chaque jour ouvré
+      for (const [jourKey, nomJour] of Object.entries(joursOuvresMap)) {
+        const controle = controlesParJour[jourKey];
+        
+        if (!controle) {
+          // Pas de contrôle ce jour
+          joursNonConformes.push(`${nomJour} (non contrôlée)`);
+        } else {
+          // Contrôle existe, vérifier la conformité
+          if (controle.isDepartMetrologie) {
+            // Départ métrologie = conforme
+            conformiteJours++;
+          } else {
+            // Calculer ratio outils
+            const nbOutilsPresents = nbOutilsTotal - controle.nbManquants;
+            const ratio = nbOutilsTotal > 0 ? (nbOutilsPresents / nbOutilsTotal) * 100 : 100;
+            
+            if (ratio === 100) {
+              conformiteJours++;
+            } else {
+              joursNonConformes.push(`${nomJour} (manquants)`);
+            }
+          }
+        }
+      }
+      
+      // Calculer conformité globale de cette mallette
+      const conformitePourcentage = nbOutilsTotal > 0 
+        ? Math.round(((nbOutilsTotal - (controlesParJour[Object.keys(joursOuvresMap)[Object.keys(joursOuvresMap).length - 1]]?.nbManquants || 0)) / nbOutilsTotal) * 100)
+        : 100;
+      
+      // Nombre de manquants (dernier état)
+      const dernierControle = Object.values(controlesParJour).sort((a, b) => b.date - a.date)[0];
+      const nbManquants = dernierControle?.nbManquants || 0;
+      
+      mallettesDetail.push({
+        nom: mallette,
+        nbOutils: nbOutilsTotal,
+        conformite: conformitePourcentage,
+        joursNonConformes: joursNonConformes,
+        nbManquants: nbManquants
+      });
+    });
+    
+    // Calculer taux global
+    const tauxConformiteGlobal = mallettesDetail.length > 0
+      ? Math.round(mallettesDetail.reduce((sum, m) => sum + m.conformite, 0) / mallettesDetail.length)
+      : 0;
+    
+    return {
+      tauxConformiteGlobal: tauxConformiteGlobal,
+      mallettesDetail: mallettesDetail
+    };
+    
+  } catch (error) {
+    console.error("❌ Erreur calculateNonConformitesWeek:", error);
+    throw error;
+  }
+}
+
+/**
+ * Calcule le nombre de signalements de la semaine
+ */
+function calculateSignalementsWeek(startDate, endDate) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const suiviSheet = ss.getSheetByName(CONFIG.sheets.suivi);
+    
+    if (!suiviSheet) {
+      throw new Error("Feuille Suivi_WebApp introuvable");
+    }
+    
+    const data = suiviSheet.getDataRange().getValues();
+    const signalements = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const dateValue = data[i][0];
+      let dateControl;
+      
+      if (dateValue instanceof Date) {
+        dateControl = dateValue;
+      } else if (typeof dateValue === 'string') {
+        const dateStr = dateValue.toString().replace('\n', ' ');
+        const parts = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (parts) {
+          const [, day, month, year, hour, minute, second] = parts;
+          dateControl = new Date(year, month - 1, day, hour, minute, second);
+        } else {
+          dateControl = new Date(dateValue);
+        }
+      } else {
+        dateControl = new Date(dateValue);
+      }
+      
+      if (dateControl >= startDate && dateControl <= endDate) {
+        const typeSignalement = data[i][6] || '';
+        
         if (typeSignalement && typeSignalement.toString().trim() !== '') {
-          signalementsAujourdhui.push({
-            mallette: mallette,
-            types: typeSignalement,
-            urgence: urgence,
-            description: description
+          const mallette = data[i][2];
+          const urgenceText = data[i][7] || '';
+          const description = data[i][8] || '';
+          
+          // Extraire l'outil depuis la description ou liste manquants
+          const listeManquants = data[i][5] || '';
+          let outil = 'Non spécifié';
+          if (listeManquants && listeManquants.length > 0) {
+            const premierOutil = listeManquants.split('\n')[0];
+            outil = premierOutil.replace(/^\d+\.\s*/, '');
+          }
+          
+          // Mapper urgence
+          let urgence = 'faible';
+          if (urgenceText.includes('🔴') || urgenceText.toLowerCase().includes('urgent')) {
+            urgence = 'urgent';
+          } else if (urgenceText.includes('🟠') || urgenceText.toLowerCase().includes('important')) {
+            urgence = 'important';
+          }
+          
+          // Parser types (séparés par \n)
+          const types = typeSignalement.split('\n').filter(t => t.trim() !== '');
+          
+          types.forEach(type => {
+            signalements.push({
+              mallette: mallette,
+              outil: outil,
+              type: type,
+              urgence: urgence,
+              date: Utilities.formatDate(dateControl, Session.getScriptTimeZone(), 'dd/MM/yyyy')
+            });
           });
         }
       }
     }
     
-    // 2. MALLETTES NON CONTRÔLÉES AUJOURD'HUI
-    const mallettesNonControlees = toutesMallettes.filter(m => !m.verifieeAujourdhui);
+    // Compter par urgence
+    const parUrgence = {
+      urgent: signalements.filter(s => s.urgence === 'urgent').length,
+      important: signalements.filter(s => s.urgence === 'important').length,
+      faible: signalements.filter(s => s.urgence === 'faible').length
+    };
     
-    // 3. GÉNÉRATION DE L'EMAIL HTML
-    const htmlBody = generateDailyReportHTML(
-      mallettesVerifieesAujourdhui,
-      manquantsAujourdhui,
-      signalementsAujourdhui,
-      mallettesNonControlees,
-      toutesMallettes  // ← MODIFIÉ : passer l'objet complet au lieu de juste .length
-    );
-    
-    // 4. ENVOI DE L'EMAIL
-    const recipient = CONFIG.notificationEmail;
-    const dateStr = Utilities.formatDate(today, Session.getScriptTimeZone(), 'dd/MM/yyyy');
-    const subject = `📊 Rapport Quotidien ToolWing - ${dateStr}`;
-    
-    MailApp.sendEmail({
-      to: recipient,
-      subject: subject,
-      htmlBody: htmlBody
-    });
-    
-    console.log(`✅ Rapport quotidien envoyé à ${recipient}`);
-    console.log(`📦 Mallettes vérifiées : ${mallettesVerifieesAujourdhui.length}/${toutesMallettes.length}`);
-    console.log(`⚠️ Manquants détectés : ${manquantsAujourdhui.length}`);
-    console.log(`🔔 Signalements ouverts : ${signalementsAujourdhui.length}`);
-    console.log(`❌ Mallettes non contrôlées : ${mallettesNonControlees.length}`);
+    return {
+      total: signalements.length,
+      parUrgence: parUrgence,
+      liste: signalements
+    };
     
   } catch (error) {
-    console.error("❌ Erreur lors de l'envoi du rapport quotidien:", error);
-    
-    try {
-      MailApp.sendEmail({
-        to: CONFIG.notificationEmail,
-        subject: "❌ Erreur - Rapport Quotidien ToolWing",
-        body: `Une erreur est survenue lors de la génération du rapport quotidien :\n\n${error}\n\nStack:\n${error.stack}`
-      });
-    } catch (e) {
-      console.error("❌ Impossible d'envoyer l'email d'erreur:", e);
-    }
+    console.error("❌ Erreur calculateSignalementsWeek:", error);
+    throw error;
   }
 }
 
 /**
- * Génère le HTML du rapport quotidien
+ * Calcule le nombre de contrôles effectués dans la semaine
  */
-function generateDailyReportHTML(mallettesVerifiees, manquants, signalements, mallettesNonControlees, toutesMallettes) {
-  const today = new Date();
-  const dateStr = Utilities.formatDate(today, Session.getScriptTimeZone(), 'dd/MM/yyyy');
-  
-  // Compter les mallettes UNIQUES vérifiées (pas les lignes)
-  const nbMallettesVerifiees = toutesMallettes.filter(m => m.verifieeAujourdhui).length;
-  const totalMallettes = toutesMallettes.length;
-  
-  const tauxVerification = totalMallettes > 0 
-    ? Math.round((nbMallettesVerifiees / totalMallettes) * 100) 
-    : 0;
-  
-  // Utiliser le MÊME calcul que le dashboard
-  const mallettesNonConformes = toutesMallettes.filter(m => {
-    return !m.verifieeAujourdhui || m.manquants > 0;
-  }).length;
-  
-  const tauxConformite = totalMallettes > 0
-    ? Math.round(((totalMallettes - mallettesNonConformes) / totalMallettes) * 100)
-    : 0;
-  
-  let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
-        .container { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #005EB8 0%, #003d82 100%); color: white; padding: 25px; border-radius: 8px 8px 0 0; margin: -30px -30px 30px -30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
-        .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 25px 0; }
-        .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #005EB8; }
-        .stat-card.success { border-left-color: #34a853; }
-        .stat-card.warning { border-left-color: #fbbc04; }
-        .stat-card.danger { border-left-color: #ea4335; }
-        .stat-label { font-size: 12px; text-transform: uppercase; color: #666; font-weight: 600; letter-spacing: 0.5px; }
-        .stat-value { font-size: 32px; font-weight: 700; margin: 5px 0; color: #333; }
-        .section { margin: 30px 0; }
-        .section-title { font-size: 20px; font-weight: 600; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #e0e0e0; color: #005EB8; }
-        .table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        .table th { background: #f1f3f4; padding: 12px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #ddd; }
-        .table td { padding: 12px; border-bottom: 1px solid #eee; }
-        .table tr:hover { background: #f8f9fa; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .badge.success { background: #e6f4ea; color: #137333; }
-        .badge.warning { background: #fef7e0; color: #b45309; }
-        .badge.danger { background: #fce8e6; color: #c5221f; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center; color: #666; font-size: 14px; }
-        .empty-state { text-align: center; padding: 40px; color: #666; font-style: italic; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>📊 Rapport Quotidien ToolWing</h1>
-          <p>${dateStr} - XWB BARQUE Operations</p>
-        </div>
-        
-        <div class="stats-grid">
-          <div class="stat-card success">
-            <div class="stat-label">Mallettes vérifiées</div>
-            <div class="stat-value">${nbMallettesVerifiees}/${totalMallettes}</div>
-            <div style="font-size: 14px; color: #666; margin-top: 5px;">Taux : ${tauxVerification}%</div>
-          </div>
-          <div class="stat-card ${manquants.length > 0 ? 'warning' : 'success'}">
-            <div class="stat-label">Manquants détectés</div>
-            <div class="stat-value">${manquants.length}</div>
-            <div style="font-size: 14px; color: #666; margin-top: 5px;">Mallettes concernées</div>
-          </div>
-          <div class="stat-card ${signalements.length > 0 ? 'warning' : 'success'}">
-            <div class="stat-label">Signalements ouverts</div>
-            <div class="stat-value">${signalements.length}</div>
-            <div style="font-size: 14px; color: #666; margin-top: 5px;">À traiter</div>
-          </div>
-          <div class="stat-card ${mallettesNonControlees.length > 0 ? 'danger' : 'success'}">
-            <div class="stat-label">Non contrôlées</div>
-            <div class="stat-value">${mallettesNonControlees.length}</div>
-            <div style="font-size: 14px; color: #666; margin-top: 5px;">Conformité : ${tauxConformite}%</div>
-          </div>
-        </div>
-        
-        <div class="section">
-          <div class="section-title">✅ Mallettes vérifiées aujourd'hui (${mallettesVerifiees.length})</div>
+function calculateControlesEffectues(startDate, endDate) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const suiviSheet = ss.getSheetByName(CONFIG.sheets.suivi);
+    
+    if (!suiviSheet) {
+      return 0;
+    }
+    
+    const data = suiviSheet.getDataRange().getValues();
+    let count = 0;
+    
+    for (let i = 1; i < data.length; i++) {
+      const dateValue = data[i][0];
+      let dateControl;
+      
+      if (dateValue instanceof Date) {
+        dateControl = dateValue;
+      } else if (typeof dateValue === 'string') {
+        const dateStr = dateValue.toString().replace('\n', ' ');
+        const parts = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (parts) {
+          const [, day, month, year, hour, minute, second] = parts;
+          dateControl = new Date(year, month - 1, day, hour, minute, second);
+        } else {
+          dateControl = new Date(dateValue);
+        }
+      } else {
+        dateControl = new Date(dateValue);
+      }
+      
+      if (dateControl >= startDate && dateControl <= endDate) {
+        count++;
+      }
+    }
+    
+    return count;
+    
+  } catch (error) {
+    console.error("❌ Erreur calculateControlesEffectues:", error);
+    return 0;
+  }
+}
+
+/**
+ * Compile les données par mallette en format JSON
+ */
+function compileDonneesJSON(mallettesDetail) {
+  const json = {};
+  mallettesDetail.forEach(m => {
+    json[m.nom] = {
+      conformite: m.conformite,
+      nbOutils: m.nbOutils,
+      manquants: m.nbManquants,
+      joursNonConformes: m.joursNonConformes,
+      nbJoursNonConformes: m.joursNonConformes.length
+    };
+  });
+  return json;
+}
+
+/**
+ * Génère le HTML du rapport hebdomadaire basé sur le modèle V3_FINAL
+ */
+function generateWeeklyReportHTML(weekData, lastWeekData) {
+  const styles = `
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 20px auto; padding: 20px; background-color: #f5f5f5; }
+      .email-container { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+      .header { background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%); color: white; padding: 30px; text-align: center; }
+      .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+      .header p { margin: 10px 0 0 0; font-size: 16px; opacity: 0.95; }
+      .section { padding: 25px 30px; border-bottom: 1px solid #e0e0e0; }
+      .section:last-child { border-bottom: none; }
+      .section-title { font-size: 20px; font-weight: 600; color: #1976D2; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #1976D2; }
+      .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+      .kpi-card { background: #f8f9fa; border-left: 4px solid #1976D2; padding: 15px; border-radius: 4px; }
+      .kpi-value { font-size: 32px; font-weight: 700; color: #1976D2; margin: 5px 0; }
+      .kpi-label { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+      table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+      th { background: #1976D2; color: white; padding: 12px 8px; text-align: left; font-weight: 600; font-size: 13px; }
+      td { padding: 12px 8px; border-bottom: 1px solid #e0e0e0; }
+      tr:hover { background: #f8f9fa; }
+      .status-badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+      .status-excellent { background: #E8F5E9; color: #2E7D32; }
+      .status-good { background: #FFF3E0; color: #E65100; }
+      .status-critical { background: #FFEBEE; color: #C62828; }
+      .alert-box { background: #FFF3E0; border-left: 4px solid #FF9800; padding: 15px; margin: 10px 0; border-radius: 4px; }
+      .alert-box.critical { background: #FFEBEE; border-left-color: #F44336; }
+      .alert-box.success { background: #E8F5E9; border-left-color: #4CAF50; }
+      .alert-title { font-weight: 600; margin-bottom: 8px; font-size: 15px; }
+      .alert-list { margin: 8px 0 0 20px; font-size: 14px; }
+      .trend { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+      .trend-up { background: #E8F5E9; color: #2E7D32; }
+      .trend-down { background: #FFEBEE; color: #C62828; }
+      .footer { background: #263238; color: #B0BEC5; padding: 20px 30px; text-align: center; font-size: 13px; }
+      .footer strong { color: white; font-size: 15px; }
+      .legend { background: #f8f9fa; padding: 12px; border-radius: 4px; margin: 15px 0; font-size: 13px; }
+    </style>
   `;
   
-  if (mallettesVerifiees.length > 0) {
-    html += `
-          <table class="table">
-            <thead><tr><th>Mallette</th><th>Contrôleur</th><th>Heure</th><th>État</th></tr></thead>
-            <tbody>
-    `;
-    
-    mallettesVerifiees.forEach(m => {
-      const badge = m.manquants 
-        ? '<span class="badge warning">⚠️ Manquants</span>' 
-        : '<span class="badge success">✅ Conforme</span>';
-      
-      html += `<tr><td><strong>${m.mallette}</strong></td><td>${m.controleur}</td><td>${m.heure}</td><td>${badge}</td></tr>`;
-    });
-    
-    html += `</tbody></table>`;
-  } else {
-    html += `<div class="empty-state">Aucune mallette vérifiée aujourd'hui</div>`;
-  }
-  
-  html += `</div>`;
-  
-  if (manquants.length > 0) {
-    html += `
-        <div class="section">
-          <div class="section-title">⚠️ Outils manquants (${manquants.length} mallette(s))</div>
-          <table class="table">
-            <thead><tr><th>Mallette</th><th>Nb manquants</th><th>Détails</th></tr></thead>
-            <tbody>
-    `;
-    
-    manquants.forEach(m => {
-      html += `<tr><td><strong>${m.mallette}</strong></td><td style="text-align: center;"><span class="badge warning">${m.nbManquants}</span></td><td style="font-size: 13px;">${m.liste.replace(/\n/g, '<br>')}</td></tr>`;
-    });
-    
-    html += `</tbody></table></div>`;
-  }
-  
-  if (signalements.length > 0) {
-    html += `
-        <div class="section">
-          <div class="section-title">🔔 Signalements ouverts (${signalements.length})</div>
-          <table class="table">
-            <thead><tr><th>Mallette</th><th>Type(s)</th><th>Urgence</th><th>Description</th></tr></thead>
-            <tbody>
-    `;
-    
-    signalements.forEach(s => {
-      let urgenceBadge = '';
-      if (s.urgence.includes('🔴')) urgenceBadge = '<span class="badge danger">🔴 Urgent</span>';
-      else if (s.urgence.includes('🟠')) urgenceBadge = '<span class="badge warning">🟠 Important</span>';
-      else if (s.urgence.includes('🟢')) urgenceBadge = '<span class="badge success">🟢 Faible</span>';
-      
-      html += `<tr><td><strong>${s.mallette}</strong></td><td style="font-size: 13px;">${s.types.replace(/\n/g, '<br>')}</td><td>${urgenceBadge}</td><td style="font-size: 13px;">${s.description}</td></tr>`;
-    });
-    
-    html += `</tbody></table></div>`;
-  }
-  
-  if (mallettesNonControlees.length > 0) {
-    html += `
-        <div class="section">
-          <div class="section-title" style="color: #ea4335;">❌ Mallettes non contrôlées - NON CONFORMES (${mallettesNonControlees.length})</div>
-          <table class="table">
-            <thead><tr><th>Mallette</th><th>Nb outils</th><th>Dernière vérification</th><th>Contrôleur</th></tr></thead>
-            <tbody>
-    `;
-    
-    mallettesNonControlees.forEach(m => {
-      html += `<tr style="background: #fce8e6;"><td><strong>${m.nom}</strong></td><td style="text-align: center;">${m.nbOutils}</td><td>${m.derniereVerif}</td><td>${m.controleur}</td></tr>`;
-    });
-    
-    html += `
-            </tbody>
-          </table>
-          <div style="padding: 15px; background: #fff3e0; border-left: 4px solid #ea4335; margin-top: 15px; border-radius: 4px;">
-            <strong>⚠️ Action requise :</strong> Ces mallettes doivent être contrôlées aujourd'hui pour être conformes.
-          </div>
+  // Header
+  let html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      ${styles}
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="header">
+          <h1>📊 RAPPORT HEBDOMADAIRE TOOLWING</h1>
+          <p>Semaine du ${weekData.formattedPeriod} (Semaine ${weekData.numeroSemaine})</p>
         </div>
-    `;
-  } else {
-    html += `
-        <div class="section">
-          <div class="section-title" style="color: #34a853;">✅ Toutes les mallettes ont été contrôlées !</div>
-          <div style="text-align: center; padding: 30px; background: #e6f4ea; border-radius: 8px;">
-            <div style="font-size: 48px; margin-bottom: 10px;">🎉</div>
-            <div style="font-size: 18px; color: #137333; font-weight: 600;">100% de conformité aujourd'hui !</div>
-          </div>
-        </div>
-    `;
-  }
+  `;
+  
+  // Synthèse exécutive
+  const conformiteTrend = weekData.conformiteGlobale - lastWeekData.conformiteGlobale;
+  const manquantsTrend = weekData.manquantsTotal - lastWeekData.manquantsTotal;
+  const signalementsTrend = weekData.signalementsTotal - lastWeekData.signalementsTotal;
   
   html += `
+    <div class="section">
+      <div class="section-title">📌 SYNTHÈSE EXÉCUTIVE</div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Taux de conformité global</div>
+          <div class="kpi-value">${weekData.conformiteGlobale}%</div>
+          <div class="trend ${conformiteTrend >= 0 ? 'trend-up' : 'trend-down'}">
+            ${conformiteTrend >= 0 ? '+' : ''}${conformiteTrend}% vs S${lastWeekData.semaine} ${conformiteTrend >= 0 ? '📈' : '📉'}
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Manquants détectés</div>
+          <div class="kpi-value">${weekData.manquantsTotal}</div>
+          <div class="trend ${manquantsTrend <= 0 ? 'trend-up' : 'trend-down'}">
+            ${manquantsTrend} vs S${lastWeekData.semaine} ${manquantsTrend <= 0 ? '✅' : '⚠️'}
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Signalements ouverts</div>
+          <div class="kpi-value">${weekData.signalementsTotal}</div>
+          <div class="trend ${signalementsTrend <= 0 ? 'trend-up' : 'trend-down'}">
+            ${signalementsTrend > 0 ? '+' : ''}${signalementsTrend} vs S${lastWeekData.semaine} ${signalementsTrend <= 0 ? '✅' : '⚠️'}
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Mallettes à risque</div>
+          <div class="kpi-value">${weekData.mallettesARisque}</div>
+          <div class="kpi-label" style="margin-top: 5px;">(&lt; 80% de conformité)</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Tableau performance par mallette
+  const mallettesSorted = weekData.mallettesDetail.sort((a, b) => a.conformite - b.conformite);
+  
+  html += `
+    <div class="section">
+      <div class="section-title">📋 PERFORMANCE PAR MALLETTE</div>
+      <table>
+        <thead>
+          <tr>
+            <th>MALLETTE</th>
+            <th style="text-align: center;">Nb Outils</th>
+            <th style="text-align: center;">Conformité</th>
+            <th>Jours non-conformes</th>
+            <th style="text-align: center;">Manquants</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  mallettesSorted.forEach(m => {
+    const statusClass = m.conformite === 100 ? 'status-excellent' 
+                      : m.conformite >= 80 ? 'status-good' 
+                      : 'status-critical';
+    
+    const joursText = m.joursNonConformes.length === 0 
+                    ? '<td style="color: #2E7D32;">—</td>'
+                    : `<td>${m.joursNonConformes.join(', ')}</td>`;
+    
+    const manquantsColor = m.nbManquants > 0 ? '#C62828' : '#2E7D32';
+    
+    html += `
+      <tr>
+        <td><strong>${m.nom}</strong></td>
+        <td style="text-align: center;">${m.nbOutils}</td>
+        <td style="text-align: center;">
+          <span class="status-badge ${statusClass}">${m.conformite}%</span>
+        </td>
+        ${joursText}
+        <td style="text-align: center; font-weight: 600; color: ${manquantsColor};">${m.nbManquants}</td>
+      </tr>
+    `;
+  });
+  
+  html += `
+        </tbody>
+      </table>
+      <div class="legend">
+        <strong>Légende :</strong>
+        <div style="margin-top: 8px;">
+          <span class="status-badge status-excellent">100%</span> Conforme &nbsp;&nbsp;
+          <span class="status-badge status-good">99-80%</span> À surveiller &nbsp;&nbsp;
+          <span class="status-badge status-critical">&lt;80%</span> Action requise
+        </div>
+        <div style="margin-top: 8px; font-size: 12px; color: #666;">
+          <strong>Note :</strong> Le % de conformité prend en compte : (1) les jours de contrôle effectués ET (2) le ratio outils présents/total outils.<br>
+          Les signalements "Départ métrologie" n'impactent pas le taux de conformité.
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Alertes - Mallettes < 80%
+  const mallettesARisque = weekData.mallettesDetail.filter(m => m.conformite < 80);
+  
+  if (mallettesARisque.length > 0) {
+    html += `
+      <div class="section">
+        <div class="section-title">🔴 ALERTES ET ACTIONS RECOMMANDÉES</div>
+        <div class="alert-box critical">
+          <div class="alert-title">⚠️ ${mallettesARisque.length} mallette(s) ont un taux de conformité &lt; 80%</div>
+          <ul class="alert-list">
+    `;
+    
+    mallettesARisque.forEach(m => {
+      html += `<li><strong>${m.nom}</strong> : ${m.conformite}% de conformité (${m.nbOutils} outils, ${m.nbManquants} manquants)</li>`;
+    });
+    
+    html += `
+          </ul>
+          <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #FFCDD2;">
+            <strong>→ Action recommandée :</strong> Revoir le processus de contrôle quotidien avec l'équipe.
+          </div>
+        </div>
+    `;
+  }
+  
+  // Alertes - Manquants
+  if (weekData.manquantsTotal > 0) {
+    html += `
+      <div class="alert-box critical">
+        <div class="alert-title">⚠️ ${weekData.manquantsTotal} manquants détectés dans ${weekData.mallettesAvecManquants.length} mallette(s)</div>
+    `;
+    
+    weekData.mallettesAvecManquants.forEach(m => {
+      html += `
+        <div style="background: #E3F2FD; padding: 12px; margin: 8px 0; border-radius: 4px; border-left: 3px solid #1976D2;">
+          <strong>${m.nom} :</strong> ${m.nbManquants} manquant(s)
+          <div style="margin-top: 5px; font-size: 12px;">
+            ${m.listeOutils.replace(/\n/g, '<br>')}
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`;
+  }
+  
+  // Signalements
+  if (weekData.signalementsTotal > 0) {
+    html += `
+      <div class="alert-box">
+        <div class="alert-title">🔔 ${weekData.signalementsTotal} signalement(s) ouvert(s) cette semaine</div>
+        <table style="font-size: 13px; margin-top: 10px;">
+          <thead>
+            <tr>
+              <th>Mallette</th>
+              <th>Outil concerné</th>
+              <th>Type</th>
+              <th style="text-align: center;">Urgence</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    weekData.signalements.liste.forEach(s => {
+      const urgenceColor = s.urgence === 'urgent' ? '#F44336'
+                         : s.urgence === 'important' ? '#FF9800'
+                         : '#4CAF50';
+      const urgenceText = s.urgence === 'urgent' ? '🔴 Urgent'
+                        : s.urgence === 'important' ? '🟠 Important'
+                        : '🟢 Faible';
+      
+      html += `
+        <tr>
+          <td><strong>${s.mallette}</strong></td>
+          <td>${s.outil}</td>
+          <td>${s.type}</td>
+          <td style="text-align: center;">
+            <span style="color: ${urgenceColor}; font-weight: 600;">${urgenceText}</span>
+          </td>
+        </tr>
+      `;
+    });
+    
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+  
+  // Points positifs
+  const mallettesConformes = weekData.mallettesDetail.filter(m => m.conformite >= 90).length;
+  
+  html += `
+    <div class="alert-box success">
+      <div class="alert-title">✅ Points positifs</div>
+      <ul class="alert-list">
+        <li>${mallettesConformes} mallettes (${Math.round(mallettesConformes/weekData.mallettesDetail.length*100)}%) ont maintenu une conformité ≥ 90% toute la semaine</li>
+        ${conformiteTrend > 0 ? `<li>Amélioration de +${conformiteTrend}% du taux de conformité global vs semaine précédente</li>` : ''}
+        ${manquantsTrend < 0 ? `<li>Réduction de ${Math.abs(manquantsTrend)} manquants par rapport à la semaine dernière</li>` : ''}
+      </ul>
+    </div>
+  </div>
+  `;
+  
+  // Footer
+  html += `
         <div class="footer">
-          <p><strong>ToolWing V4.0</strong> - Système d'inventaire automatique</p>
-          <p style="font-size: 12px; margin-top: 10px; opacity: 0.7;">
-            XWB BARQUE Operations - Airbus<br>
-            Rapport généré automatiquement le ${dateStr} à 16:00
+          <p><strong>ToolWing V4.0</strong> — Système d'inventaire automatique</p>
+          <p style="margin-top: 10px; font-size: 12px; opacity: 0.8;">
+            XWB BARQUE Operations — Airbus<br>
+            Rapport généré automatiquement le ${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy à HH:mm')}<br>
+            Pour toute question : ${CONFIG.weeklyReportEmail}
           </p>
         </div>
       </div>
@@ -758,82 +1151,344 @@ function generateDailyReportHTML(mallettesVerifiees, manquants, signalements, ma
   
   return html;
 }
+
 /**
- * Configure le trigger quotidien pour le rapport à 16h00
- * IMPORTANT : Exécuter cette fonction UNE SEULE FOIS pour créer le trigger
+ * Fonction principale : Envoie le rapport hebdomadaire
  */
-function setupDailyTrigger() {
+function sendWeeklyReport() {
   try {
-    console.log("⏰ Configuration du trigger quotidien...");
+    console.log("📊 Début génération rapport hebdomadaire...");
+    console.log("=".repeat(60));
     
-    // Supprimer les anciens triggers de sendDailyReport s'ils existent
+    // 1. Calculer dates de la semaine précédente
+    const weekDates = getPreviousWeekDates();
+    console.log(`📅 Période : ${weekDates.formattedPeriod} (Semaine ${weekDates.weekNumber})`);
+    
+    // 2. Calculer tous les KPIs
+    console.log("📊 Calcul des KPIs...");
+    const manquants = calculateManquantsSansDoublonsWeek(weekDates.startDate, weekDates.endDate);
+    console.log(`  ✅ Manquants : ${manquants.totalManquants}`);
+    
+    const conformites = calculateNonConformitesWeek(weekDates.startDate, weekDates.endDate);
+    console.log(`  ✅ Conformité globale : ${conformites.tauxConformiteGlobal}%`);
+    
+    const signalements = calculateSignalementsWeek(weekDates.startDate, weekDates.endDate);
+    console.log(`  ✅ Signalements : ${signalements.total}`);
+    
+    const controlesEffectues = calculateControlesEffectues(weekDates.startDate, weekDates.endDate);
+    console.log(`  ✅ Contrôles : ${controlesEffectues}`);
+    
+    // 3. Compiler les données de la semaine
+    const weekData = {
+      annee: weekDates.year,
+      numeroSemaine: weekDates.weekNumber,
+      dateDebut: weekDates.startDate,
+      dateFin: weekDates.endDate,
+      formattedPeriod: weekDates.formattedPeriod,
+      conformiteGlobale: conformites.tauxConformiteGlobal,
+      manquantsTotal: manquants.totalManquants,
+      mallettesAvecManquants: manquants.mallettesAvecManquants,
+      signalementsTotal: signalements.total,
+      signalements: signalements,
+      mallettesARisque: conformites.mallettesDetail.filter(m => m.conformite < 80).length,
+      mallettesDetail: conformites.mallettesDetail,
+      controlesEffectues: controlesEffectues,
+      donneesParMallette: compileDonneesJSON(conformites.mallettesDetail),
+      signalementsList: signalements.liste
+    };
+    
+    // 4. Récupérer données semaine précédente
+    console.log("📊 Récupération historique...");
+    const lastWeekData = getLastWeekData();
+    
+    // 5. Générer HTML
+    console.log("📧 Génération HTML...");
+    const htmlBody = generateWeeklyReportHTML(weekData, lastWeekData);
+    
+    // 6. Envoyer email
+    console.log("📧 Envoi email...");
+    MailApp.sendEmail({
+      to: CONFIG.weeklyReportEmail,
+      subject: `📊 Rapport Hebdomadaire ToolWing - Semaine ${weekData.numeroSemaine} (${weekData.formattedPeriod})`,
+      htmlBody: htmlBody
+    });
+    console.log(`✅ Email envoyé à ${CONFIG.weeklyReportEmail}`);
+    
+    // 7. Sauvegarder dans l'historique
+    console.log("💾 Sauvegarde historique...");
+    saveWeeklyHistorique(weekData);
+    console.log("✅ Historique sauvegardé");
+    
+    console.log("=".repeat(60));
+    console.log("✅ RAPPORT HEBDOMADAIRE TERMINÉ AVEC SUCCÈS !");
+    return true;
+    
+  } catch (error) {
+    console.error("❌ ERREUR RAPPORT HEBDOMADAIRE:", error);
+    console.error("Stack:", error.stack);
+    
+    // Envoyer email d'erreur
+    try {
+      MailApp.sendEmail({
+        to: CONFIG.weeklyReportEmail,
+        subject: "❌ Erreur - Rapport Hebdomadaire ToolWing",
+        body: `Une erreur est survenue lors de la génération du rapport hebdomadaire:\n\n${error.message}\n\nStack:\n${error.stack}`
+      });
+    } catch (emailError) {
+      console.error("Impossible d'envoyer email d'erreur:", emailError);
+    }
+    
+    return false;
+  }
+}
+
+/**
+ * Configure le trigger hebdomadaire (Lundi 5h00)
+ */
+function setupWeeklyTrigger() {
+  try {
+    console.log("⏰ Configuration du trigger hebdomadaire...");
+    console.log("=".repeat(60));
+    
+    // 1. Supprimer TOUS les anciens triggers (quotidien + hebdo)
     const triggers = ScriptApp.getProjectTriggers();
+    let deletedCount = 0;
+    
     triggers.forEach(trigger => {
-      if (trigger.getHandlerFunction() === 'sendDailyReport') {
+      const funcName = trigger.getHandlerFunction();
+      if (funcName === 'sendDailyReport' || funcName === 'sendWeeklyReport') {
         ScriptApp.deleteTrigger(trigger);
-        console.log("🗑️ Ancien trigger supprimé");
+        deletedCount++;
+        console.log(`🗑️ Trigger supprimé: ${funcName}`);
       }
     });
     
-    // Créer un nouveau trigger quotidien à 16h00
-    ScriptApp.newTrigger('sendDailyReport')
+    console.log(`✅ ${deletedCount} ancien(s) trigger(s) supprimé(s)`);
+    
+    // 2. Créer nouveau trigger hebdomadaire
+    ScriptApp.newTrigger('sendWeeklyReport')
       .timeBased()
-      .atHour(16)
-      .everyDays(1)
+      .onWeekDay(ScriptApp.WeekDay.MONDAY)
+      .atHour(5)
       .create();
     
-    console.log("✅ Trigger quotidien configuré avec succès !");
-    console.log("📧 Le rapport sera envoyé tous les jours à 16h00");
-    console.log(`📬 Destinataire : ${CONFIG.notificationEmail}`);
+    console.log("✅ Trigger hebdomadaire configuré avec succès !");
+    console.log("📧 Le rapport sera envoyé tous les lundis à 5h00");
+    console.log(`📬 Destinataire : ${CONFIG.weeklyReportEmail}`);
     
+    // 3. Afficher tous les triggers actifs
     const allTriggers = ScriptApp.getProjectTriggers();
     console.log("\n📋 Triggers actifs :");
     allTriggers.forEach((trigger, index) => {
       console.log(`${index + 1}. ${trigger.getHandlerFunction()} - ${trigger.getTriggerSource()}`);
     });
     
+    console.log("=".repeat(60));
     return true;
     
   } catch (error) {
-    console.error("❌ Erreur lors de la configuration du trigger:", error);
+    console.error("❌ Erreur configuration trigger:", error);
     return false;
   }
 }
 
 /**
- * Supprime le trigger quotidien
+ * Teste l'envoi du rapport immédiatement
  */
-function removeDailyTrigger() {
+function testWeeklyReport() {
+  console.log("🧪 TEST : Envoi du rapport hebdomadaire...");
+  console.log("=".repeat(60));
+  
   try {
-    console.log("🗑️ Suppression du trigger quotidien...");
+    sendWeeklyReport();
+    console.log("\n✅ Test terminé ! Vérifiez votre boîte email.");
+    console.log(`📧 Email envoyé à : ${CONFIG.weeklyReportEmail}`);
+  } catch (error) {
+    console.error("\n❌ Erreur lors du test:", error);
+    console.error("Stack:", error.stack);
+  }
+}
+
+/**
+ * Crée la feuille Historique_Hebdo avec structure et formatage
+ */
+function createHistoriqueSheet() {
+  try {
+    console.log("📝 Création de la feuille Historique_Hebdo...");
     
-    const triggers = ScriptApp.getProjectTriggers();
-    let count = 0;
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
-    triggers.forEach(trigger => {
-      if (trigger.getHandlerFunction() === 'sendDailyReport') {
-        ScriptApp.deleteTrigger(trigger);
-        count++;
-      }
-    });
-    
-    if (count > 0) {
-      console.log(`✅ ${count} trigger(s) supprimé(s)`);
-    } else {
-      console.log("⚠️ Aucun trigger trouvé pour sendDailyReport");
+    // Supprimer si existe déjà
+    const existingSheet = ss.getSheetByName(CONFIG.sheets.historique);
+    if (existingSheet) {
+      ss.deleteSheet(existingSheet);
+      console.log("🗑️ Ancienne feuille supprimée");
     }
     
-    return true;
+    // Créer nouvelle feuille
+    const sheet = ss.insertSheet(CONFIG.sheets.historique);
+    
+    // En-têtes (12 colonnes)
+    const headers = [
+      'Année',
+      'Semaine',
+      'Date début',
+      'Date fin',
+      'Conformité %',
+      'Manquants',
+      'Signalements',
+      'Mallettes <80%',
+      'Contrôles',
+      'Données Mallettes',
+      'Signalements',
+      'Date génération'
+    ];
+    
+    sheet.getRange(1, 1, 1, 12).setValues([headers]);
+    
+    // Formatage en-têtes
+    sheet.getRange(1, 1, 1, 12)
+      .setFontWeight('bold')
+      .setBackground('#1976D2')
+      .setFontColor('white')
+      .setFontSize(11)
+      .setHorizontalAlignment('center')
+      .setVerticalAlignment('middle');
+    
+    // Figer première ligne
+    sheet.setFrozenRows(1);
+    
+    // Largeur colonnes
+    sheet.setColumnWidth(1, 80);   // Année
+    sheet.setColumnWidth(2, 80);   // Semaine
+    sheet.setColumnWidth(3, 100);  // Date début
+    sheet.setColumnWidth(4, 100);  // Date fin
+    sheet.setColumnWidth(5, 120);  // Conformité
+    sheet.setColumnWidth(6, 100);  // Manquants
+    sheet.setColumnWidth(7, 120);  // Signalements
+    sheet.setColumnWidth(8, 120);  // Mallettes <80%
+    sheet.setColumnWidth(9, 100);  // Contrôles
+    sheet.setColumnWidth(10, 400); // Données Mallettes
+    sheet.setColumnWidth(11, 400); // Signalements
+    sheet.setColumnWidth(12, 160); // Date génération
+    
+    // Hauteur ligne header
+    sheet.setRowHeight(1, 40);
+    
+    console.log("✅ Feuille Historique_Hebdo créée avec succès");
+    return sheet;
     
   } catch (error) {
-    console.error("❌ Erreur lors de la suppression du trigger:", error);
-    return false;
+    console.error("❌ Erreur createHistoriqueSheet:", error);
+    throw error;
   }
 }
 
 /**
- * Liste tous les triggers actifs du projet
+ * Sauvegarde les données d'une semaine dans l'historique
  */
+function saveWeeklyHistorique(weekData) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let historiqueSheet = ss.getSheetByName(CONFIG.sheets.historique);
+    
+    // Créer si n'existe pas
+    if (!historiqueSheet) {
+      historiqueSheet = createHistoriqueSheet();
+    }
+    
+    const lastRow = historiqueSheet.getLastRow();
+    
+    // Préparer la ligne (12 colonnes)
+    const row = [
+      weekData.annee,
+      weekData.numeroSemaine,
+      Utilities.formatDate(weekData.dateDebut, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
+      Utilities.formatDate(weekData.dateFin, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
+      weekData.conformiteGlobale,
+      weekData.manquantsTotal,
+      weekData.signalementsTotal,
+      weekData.mallettesARisque,
+      weekData.controlesEffectues,
+      JSON.stringify(weekData.donneesParMallette),
+      JSON.stringify(weekData.signalementsList),
+      new Date()
+    ];
+    
+    // Écrire la ligne
+    historiqueSheet.getRange(lastRow + 1, 1, 1, 12).setValues([row]);
+    
+    // Formatage conditionnel colonne E (Conformité)
+    const conformiteCell = historiqueSheet.getRange(lastRow + 1, 5);
+    if (weekData.conformiteGlobale === 100) {
+      conformiteCell.setBackground('#E8F5E9').setFontWeight('bold');
+    } else if (weekData.conformiteGlobale >= 80) {
+      conformiteCell.setBackground('#FFF3E0');
+    } else {
+      conformiteCell.setBackground('#FFEBEE').setFontWeight('bold');
+    }
+    
+    // Centrer colonnes numériques
+    historiqueSheet.getRange(lastRow + 1, 1, 1, 9).setHorizontalAlignment('center');
+    
+    console.log(`✅ Historique S${weekData.numeroSemaine} enregistré (ligne ${lastRow + 1})`);
+    
+  } catch (error) {
+    console.error("❌ Erreur saveWeeklyHistorique:", error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère les données de la semaine précédente pour comparaison
+ */
+function getLastWeekData() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const historiqueSheet = ss.getSheetByName(CONFIG.sheets.historique);
+    
+    // Si pas d'historique, retourner valeurs par défaut
+    if (!historiqueSheet || historiqueSheet.getLastRow() < 2) {
+      console.log("⚠️ Pas d'historique disponible");
+      return {
+        annee: 0,
+        semaine: 0,
+        conformiteGlobale: 0,
+        manquantsTotal: 0,
+        signalementsTotal: 0,
+        mallettesARisque: 0,
+        controlesEffectues: 0
+      };
+    }
+    
+    // Récupérer dernière ligne
+    const lastRow = historiqueSheet.getLastRow();
+    const data = historiqueSheet.getRange(lastRow, 1, 1, 12).getValues()[0];
+    
+    return {
+      annee: data[0],
+      semaine: data[1],
+      conformiteGlobale: data[4],
+      manquantsTotal: data[5],
+      signalementsTotal: data[6],
+      mallettesARisque: data[7],
+      controlesEffectues: data[8]
+    };
+    
+  } catch (error) {
+    console.error("❌ Erreur getLastWeekData:", error);
+    // Retourner valeurs par défaut en cas d'erreur
+    return {
+      annee: 0,
+      semaine: 0,
+      conformiteGlobale: 0,
+      manquantsTotal: 0,
+      signalementsTotal: 0,
+      mallettesARisque: 0,
+      controlesEffectues: 0
+    };
+  }
+}
 function listAllTriggers() {
   try {
     console.log("📋 Liste de tous les triggers actifs :");
@@ -965,3 +1620,43 @@ function formatSuiviDateColumnDeuxLignes() {
     console.error("❌ Erreur formatage colonne:", error);
   }
 }
+/** fonction test email */
+
+function autoriserEnvoiEmail() {
+  try {
+    MailApp.sendEmail({
+      to: CONFIG.notificationEmail,
+      subject: "Test autorisation ToolWing",
+      body: "L'application ToolWing est maintenant autorisé à envoyer des mails"
+          });
+          
+          console.log(" Email de test envoyé avec succès à:", CONFIG.notificationEmail);
+          return "Autorisation accordée !";
+         } catch (error) {
+          console.error( "Erreur !! :", error);
+          return "Erreur :" + error.message;
+         }
+}
+// ==========================================
+// 🚀 TOOLWING V4.0 - SYSTÈME D'INVENTAIRE AUTOMATIQUE
+// ==========================================
+/**
+ * Développé par :
+ * Valentin Haultcoeur
+ * Apprenti Développeur / Concepteur d'Application
+ * et 
+ * Noëmie Maerten 
+ * Gestionnaire Projets Alten
+ * Inventaire dynamique pour mallettes d'outillage - Alten pour Airbus
+ * 
+ * Décembre 2025
+ * 
+ * Système de gestion d'inventaire intelligent avec :
+ * - Formulaire WebApp dynamique
+ * - Dashboard temps réel
+ * - Rapports hebdomadaires automatiques
+ * - Historique et tendances
+ * - Notifications email
+ * 
+ */
+// ==========================================
