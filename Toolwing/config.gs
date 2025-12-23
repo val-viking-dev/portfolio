@@ -9,7 +9,7 @@
 
 // ID de votre Google Sheet
 // Trouvez-le dans l'URL: https://docs.google.com/spreadsheets/d/[SPREADSHEET_ID]/edit
-const SPREADSHEET_ID = '1m215bOBm1bn6KrYfozgrSCIkByQh6JpsTW0zOm-rfuU';
+const SPREADSHEET_ID = '1n_r1TR_b03ZRvW_1cUmToPeGRmDG7TRJS44BNqhjUy4';
 
 // Nom de la feuille contenant l'inventaire
 const SHEET_NAME = 'Sheet pour inventaire';
@@ -17,6 +17,11 @@ const SHEET_NAME = 'Sheet pour inventaire';
 // Email pour les notifications (optionnel)
 // Si vide, utilisera l'email du propriétaire du script
 const NOTIFICATION_EMAIL = 'noemie.maerten.external@airbus.com';
+
+// Email pour le rapport hebdomadaire (N+2)
+const WEEKLY_REPORT_EMAIL = 'noemie.maerten.external@airbus.com';
+
+
 
 // ==========================================
 // PARAMÈTRES AVANCÉS (OPTIONNEL)
@@ -29,8 +34,22 @@ const CONFIG = {
   // Email de notification (si vide, utilise l'email du propriétaire)
   notificationEmail: NOTIFICATION_EMAIL || Session.getActiveUser().getEmail(),
   
+  // Email pour rapport hebdomadaire
+  weeklyReportEmail: WEEKLY_REPORT_EMAIL,
+
+  // Changement des sous-titres
+  formTitle: 'Inventaire des mallettes',
+  formSubtitle: 'Inventaire des moyens de contrôle - XWB BARQUE T12',
+  
   // Seuil pour notification urgente
   urgentKeywords: ['urgent', 'bloqueant', '🔴'],
+  
+  // Seuils d'alerte pour conformité
+  thresholds: {
+    excellent: 100,    // 100% = Conforme
+    good: 80,          // 99-80% = À surveiller
+    critical: 80       // <80% = Action requise
+  },
   
   // Couleurs pour le dashboard
   colors: {
@@ -49,7 +68,8 @@ const CONFIG = {
     inventaire: 'Sheet pour inventaire',
     suivi: 'Suivi_WebApp',
     erreurs: 'Erreurs_Validation',
-    dashboard: 'Dashboard'
+    dashboard: 'Dashboard',
+    historique: 'Historique_Hebdo'
   }
 };
 
@@ -78,6 +98,7 @@ function testConfiguration() {
     
     // Test 4: Email de notification
     console.log("✅ Email de notification:", CONFIG.notificationEmail);
+    console.log("✅ Email rapport hebdomadaire:", CONFIG.weeklyReportEmail);
     
     console.log("\n✅ CONFIGURATION VALIDÉE - Tout est OK!");
     return true;
