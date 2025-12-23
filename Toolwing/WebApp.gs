@@ -7,199 +7,21 @@
  * Google Forms a des limitations, ce script contourne ces limitations
  */
 
-// ==========================================
-// SOLUTION 1: FORMULAIRE DYNAMIQUE AVEC SECTIONS
-// ==========================================
-
-/**
- * Crée un formulaire avec logique conditionnelle améliorée
- * Utilise des sections et de la validation personnalisée
- */
-function createAdvancedForm() {
-  try {
-    const form = FormApp.openById(FORM_ID);
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
-    
-    // Nettoyer le formulaire
-    clearForm(form);
-    
-    // Configuration de base
-    form.setTitle('Inventaire des Mallettes - Version Avancée');
-    form.setDescription('Système d\'inventaire avec logique conditionnelle intelligente');
-    form.setCollectEmail(false);
-    form.setProgressBar(true);
-    
-    // Obtenir les données
-    const mallettesData = getMallettesFromSheet(sheet);
-    
-    // ==========================================
-    // SECTION 1: IDENTIFICATION
-    // ==========================================
-    
-    const nomPrenomItem = form.addTextItem()
-      .setTitle('1. Nom et Prénom')
-      .setRequired(true)
-      .setValidation(
-        FormApp.createTextValidation()
-          .requireTextContainsPattern('[A-Za-zÀ-ÿ\\s]+')
-          .setHelpText('Veuillez entrer un nom valide')
-          .build()
-      );
-    
-    // ==========================================
-    // SECTION 2: SÉLECTION DES MALLETTES
-    // ==========================================
-    
-    const mallettesControlees = form.addCheckboxItem()
-      .setTitle('2. Quelle(s) mallette(s) avez-vous contrôlé ?')
-      .setRequired(true)
-      .setHelpText('Sélectionnez toutes les mallettes vérifiées');
-    
-    const mallettesChoices = mallettesData.map(m => 
-      mallettesControlees.createChoice(m.nom)
-    );
-    mallettesControlees.setChoices(mallettesChoices);
-    
-    // Saut de page
-    form.addPageBreakItem().setTitle('Analyse des manquants');
-    
-    // ==========================================
-    // SECTION 3: SIGNALEMENT DES MANQUANTS
-    // ==========================================
-    
-    const manquantsQuestion = form.addMultipleChoiceItem()
-      .setTitle('3. Y a-t-il des manquants dans les mallettes contrôlées ?')
-      .setRequired(true);
-    
-    // Créer les sections conditionnelles
-    const sectionManquants = form.addPageBreakItem()
-      .setTitle('Détails des manquants');
-      
-    const sectionSignalement = form.addPageBreakItem()
-      .setTitle('Signalements additionnels');
-    
-    // Configurer la navigation conditionnelle
-    manquantsQuestion.setChoices([
-      manquantsQuestion.createChoice('Oui, il y a des manquants', sectionManquants),
-      manquantsQuestion.createChoice('Non, tout est complet', sectionSignalement)
-    ]);
-    
-    // ==========================================
-    // SECTION 4: DÉTAILS DES MANQUANTS (Conditionnelle)
-    // ==========================================
-    
-    // Pour chaque mallette, créer une question conditionnelle
-    mallettesData.forEach((mallette, index) => {
-      // Question: Cette mallette a-t-elle des manquants ?
-      const malletteManquants = form.addMultipleChoiceItem()
-        .setTitle(`La ${mallette.nom} a-t-elle des manquants ?`)
-        .setHelpText('Répondez uniquement si vous avez contrôlé cette mallette')
-        .setRequired(false);
-      
-      malletteManquants.setChoices([
-        malletteManquants.createChoice('Oui'),
-        malletteManquants.createChoice('Non'),
-        malletteManquants.createChoice('Non contrôlée')
-      ]);
-      
-      // Liste des outils manquants pour cette mallette
-      if (mallette.outils.length > 0) {
-        const outilsChoices = mallette.outils.map((outil, i) => 
-          `${i + 1}. ${outil}`
-        );
-        
-        const outilsManquants = form.addCheckboxItem()
-          .setTitle(`Outils manquants dans ${mallette.nom}`)
-          .setHelpText('Cochez les outils manquants (si applicable)')
-          .setRequired(false);
-        
-        outilsManquants.setChoices(
-          outilsChoices.map(o => outilsManquants.createChoice(o))
-        );
-      }
-    });
-    
-    // Navigation vers signalement
-    form.addPageBreakItem()
-      .setGoToPage(sectionSignalement);
-    
-    // ==========================================
-    // SECTION 5: SIGNALEMENTS ADDITIONNELS
-    // ==========================================
-    
-    const autreSignalement = form.addMultipleChoiceItem()
-      .setTitle('6. Avez-vous d\'autres éléments à signaler ?')
-      .setHelpText('Casse, métrologie, commande, etc.')
-      .setRequired(true);
-    
-    const sectionDetailsSignalement = form.addPageBreakItem()
-      .setTitle('Détails du signalement');
-    
-    autreSignalement.setChoices([
-      autreSignalement.createChoice('Oui', sectionDetailsSignalement),
-      autreSignalement.createChoice('Non', FormApp.PageNavigationType.SUBMIT)
-    ]);
-    
-    // Détails du signalement
-    form.addParagraphTextItem()
-      .setTitle('7. Décrivez votre signalement')
-      .setHelpText('Soyez précis sur les actions requises')
-      .setRequired(false);
-    
-    // Type de signalement
-    form.addCheckboxItem()
-      .setTitle('Type de signalement')
-      .setChoices([
-        'Outil cassé',
-        'Départ en métrologie',
-        'Demande de commande',
-        'Réorganisation mallette',
-        'Autre'
-      ].map(type => FormApp.createChoice(type)));
-    
-    // Urgence
-    form.addMultipleChoiceItem()
-      .setTitle('Niveau d\'urgence')
-      .setChoices([
-        '🔴 Urgent (bloquant)',
-        '🟠 Important (sous 1 semaine)',
-        '🟡 Normal (sous 1 mois)',
-        '🟢 Faible (information)'
-      ].map(urgence => FormApp.createChoice(urgence)));
-    
-    console.log("✅ Formulaire avancé créé avec succès");
-    
-    return {
-      success: true,
-      formUrl: form.getPublishedUrl(),
-      editUrl: form.getEditUrl()
-    };
-    
-  } catch (error) {
-    console.error("❌ Erreur:", error);
-    return {
-      success: false,
-      error: error.toString()
-    };
-  }
-}
-
-// ==========================================
-// SOLUTION 2: WEBAPP AVEC FORMULAIRE DYNAMIQUE
-// ==========================================
-
 /**
  * Créer une WebApp avec un formulaire HTML dynamique
  * Plus de flexibilité que Google Forms natif
  */
 function doGet() {
-  const template = HtmlService.createTemplateFromFile('index');
+  const template = HtmlService.createTemplateFromFile('Index');
   
   // Passer les données au template
   const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
   const sheet = spreadsheet.getSheetByName(SHEET_NAME);
   template.mallettesData = JSON.stringify(getMallettesFromSheet(sheet));
+
+  // Ajouter les informations de configuration du sous-titre
+  template.formTitle = CONFIG.formTitle || 'Inventaire des Mallettes';
+  template.formSubtitle = CONFIG.formSubtitle || '';
   
   return template.evaluate()
     .setTitle('Inventaire Mallettes')
@@ -226,17 +48,21 @@ function processWebFormSubmission(formData) {
     
     // Mettre à jour le Dashboard automatiquement
     try {
-      console.log("📊 Mise à jour du Dashboard...");
-      createDashboard();
-      console.log("✅ Dashboard mis à jour");
+        console.log("📊 Mise à jour du Dashboard...");
+        createDashboard();
+          console.log("✅ Dashboard mis à jour");
     } catch (dashboardError) {
-      console.error("⚠️ Erreur lors de la mise à jour du Dashboard:", dashboardError);
-      // Ne pas faire échouer la soumission si le dashboard échoue
+        console.error("⚠️ Erreur lors de la mise à jour du Dashboard:", dashboardError);
+        console.error("Stack:", dashboardError.stack);
+      // IMPORTANT : Ne pas retourner d'erreur, les données sont déjà sauvegardées
     }
     
     // Envoyer notification si nécessaire
     if (formData.hasManquants === 'oui' || (formData.urgence && formData.urgence.includes('🔴'))) {
       console.log("📧 Envoi de notification...");
+      if ( !CONFIG.enableEmailNotifications) {
+        console.warn("Envoi d'email DESACTIVE dans CONFIG")
+      } else {
       try {
         sendNotificationEmail(formData);
         console.log("✅ Notification envoyée");
@@ -245,6 +71,9 @@ function processWebFormSubmission(formData) {
         // Ne pas faire échouer la soumission si l'email échoue
       }
     }
+  } else {
+    console.log("Aucune notification nécessaire ( pas de manquants urgents)")
+  }  
     
     return {
       success: true,
@@ -339,151 +168,6 @@ function sendAdvancedNotification(data) {
   }
 }
 
-// ==========================================
-// SOLUTION 3: VALIDATION CÔTÉ SERVEUR
-// ==========================================
-
-/**
- * Valide les réponses pour s'assurer de la cohérence
- * Appelée après soumission du formulaire
- */
-function validateFormResponse(e) {
-  const responses = e.response.getItemResponses();
-  const validation = {
-    isValid: true,
-    errors: [],
-    warnings: []
-  };
-  
-  // Extraire les réponses
-  let mallettesControlees = [];
-  let mallettesAvecManquants = [];
-  let hasManquants = false;
-  
-  responses.forEach(response => {
-    const title = response.getItem().getTitle();
-    const answer = response.getResponse();
-    
-    if (title.includes('mallette(s) avez-vous contrôlé')) {
-      mallettesControlees = Array.isArray(answer) ? answer : [answer];
-    } else if (title.includes('Y a-t-il des manquants')) {
-      hasManquants = (answer === 'Oui');
-    } else if (title.includes('Dans quelle(s) mallette(s)') && answer) {
-      mallettesAvecManquants = Array.isArray(answer) ? answer : [answer];
-    }
-  });
-  
-  // Validations
-  
-  // 1. Les mallettes avec manquants doivent être dans les mallettes contrôlées
-  mallettesAvecManquants.forEach(mallette => {
-    if (!mallettesControlees.includes(mallette)) {
-      validation.isValid = false;
-      validation.errors.push(
-        `Erreur: "${mallette}" signalée avec manquants mais non marquée comme contrôlée`
-      );
-    }
-  });
-  
-  // 2. Si manquants = Oui, il doit y avoir au moins une mallette avec manquants
-  if (hasManquants && mallettesAvecManquants.length === 0) {
-    validation.warnings.push(
-      'Attention: Manquants signalés mais aucune mallette spécifique indiquée'
-    );
-  }
-  
-  // 3. Si manquants = Non, il ne doit pas y avoir de mallettes avec manquants
-  if (!hasManquants && mallettesAvecManquants.length > 0) {
-    validation.isValid = false;
-    validation.errors.push(
-      'Erreur: Pas de manquants signalés mais des mallettes avec manquants sont sélectionnées'
-    );
-  }
-  
-  // Traiter les erreurs
-  if (!validation.isValid) {
-    // Enregistrer l'erreur dans une feuille de logs
-    logValidationError(e, validation);
-    
-    // Envoyer une notification
-    sendValidationAlert(validation);
-  }
-  
-  return validation;
-}
-
-/**
- * Enregistre les erreurs de validation
- */
-function logValidationError(e, validation) {
-  try {
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    
-    let errorSheet;
-    try {
-      errorSheet = spreadsheet.getSheetByName('Erreurs_Validation');
-    } catch (err) {
-      errorSheet = spreadsheet.insertSheet('Erreurs_Validation');
-      errorSheet.getRange(1, 1, 1, 5).setValues([[
-        'Date/Heure',
-        'Email',
-        'Erreurs',
-        'Avertissements',
-        'Données brutes'
-      ]]);
-      errorSheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#ffebee');
-    }
-    
-    const lastRow = errorSheet.getLastRow();
-    errorSheet.getRange(lastRow + 1, 1, 1, 5).setValues([[
-      new Date(),
-      e.response.getRespondentEmail() || 'Anonyme',
-      validation.errors.join('\n'),
-      validation.warnings.join('\n'),
-      JSON.stringify(e.response.getItemResponses().map(r => ({
-        question: r.getItem().getTitle(),
-        response: r.getResponse()
-      })))
-    ]]);
-    
-    console.log("❌ Erreur de validation enregistrée");
-    
-  } catch (error) {
-    console.error("Erreur lors de l'enregistrement:", error);
-  }
-}
-
-/**
- * Envoie une alerte de validation
- */
-function sendValidationAlert(validation) {
-  const recipient = Session.getActiveUser().getEmail();
-  const subject = '[INVENTAIRE] ⚠️ Erreur de validation détectée';
-  
-  let body = 'Des incohérences ont été détectées dans une soumission d\'inventaire:\n\n';
-  
-  if (validation.errors.length > 0) {
-    body += '❌ ERREURS:\n';
-    validation.errors.forEach(error => {
-      body += `  - ${error}\n`;
-    });
-  }
-  
-  if (validation.warnings.length > 0) {
-    body += '\n⚠️ AVERTISSEMENTS:\n';
-    validation.warnings.forEach(warning => {
-      body += `  - ${warning}\n`;
-    });
-  }
-  
-  body += '\n\nVeuillez vérifier la feuille "Erreurs_Validation" pour plus de détails.';
-  
-  try {
-    MailApp.sendEmail(recipient, subject, body);
-  } catch (error) {
-    console.error("Erreur envoi alerte:", error);
-  }
-}
 
 // ==========================================
 // UTILITAIRES POUR WEBAPP
@@ -532,3 +216,4 @@ function getMalletteHistory(malletteName) {
   
   return history.reverse(); // Plus récent en premier
 }
+
