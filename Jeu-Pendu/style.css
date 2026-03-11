@@ -1,0 +1,292 @@
+/* ========== RESET & BASE ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ========== UTILITAIRES ========== */
+.hidden {
+    display: none !important;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+}
+
+/* ========== SECTION ACCUEIL ========== */
+#section-accueil h1 {
+    color: #1a1a2e;
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
+#section-accueil p {
+    color: #555;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+.select-wrapper {
+    margin-bottom: 25px;
+}
+
+.select-wrapper label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+#diffSelect {
+    padding: 12px 20px;
+    font-size: 1em;
+    border: 2px solid #0f3460;
+    border-radius: 10px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    min-width: 250px;
+}
+
+#diffSelect:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+/* ========== BOUTONS ========== */
+.btn {
+    padding: 15px 40px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 5px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #e94560, #0f3460);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(233, 69, 96, 0.3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #555, #333);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== SECTION JEU ========== */
+.game-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+/* Dessin du pendu */
+#conteneurDessin {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pendu-svg {
+    width: 200px;
+    height: 250px;
+}
+
+/* Potence */
+.potence {
+    stroke: #5c4033;
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+/* Parties du corps - cachées par défaut */
+.partie-corps {
+    stroke: #e94560;
+    stroke-width: 4;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#tete {
+    fill: none;
+    stroke-width: 4;
+}
+
+/* Classes pour afficher les parties */
+.visible {
+    opacity: 1 !important;
+}
+
+/* Informations de jeu */
+.game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#conteneurMot {
+    font-size: 2.5em;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 8px;
+    color: #1a1a2e;
+    font-weight: bold;
+    min-height: 60px;
+}
+
+#affichageErreurs {
+    font-size: 1.3em;
+    color: #e94560;
+    font-weight: bold;
+    padding: 10px 20px;
+    background: rgba(233, 69, 96, 0.1);
+    border-radius: 10px;
+}
+
+/* ========== BOUTONS LETTRES ========== */
+#conteneurLettres {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#conteneurLettres button {
+    width: 45px;
+    height: 45px;
+    font-size: 1.2em;
+    font-weight: bold;
+    border: 2px solid #0f3460;
+    border-radius: 8px;
+    background: white;
+    color: #0f3460;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#conteneurLettres button:hover:not(:disabled) {
+    background: #0f3460;
+    color: white;
+    transform: scale(1.1);
+}
+
+#conteneurLettres button:disabled {
+    background: #ddd;
+    border-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Lettre trouvée */
+#conteneurLettres button.correct {
+    background: #2ecc71;
+    border-color: #27ae60;
+    color: white;
+}
+
+/* Lettre fausse */
+#conteneurLettres button.incorrect {
+    background: #e74c3c;
+    border-color: #c0392b;
+    color: white;
+}
+
+/* ========== SECTION RESULTAT ========== */
+.resultat-container {
+    padding: 50px 40px;
+}
+
+#messageFin {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+#messageFin.victoire {
+    color: #2ecc71;
+}
+
+#messageFin.defaite {
+    color: #e74c3c;
+}
+
+#affichageMot {
+    font-size: 1.3em;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.resultat-boutons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 600px) {
+    .container {
+        padding: 25px;
+    }
+    
+    #section-accueil h1 {
+        font-size: 1.8em;
+    }
+    
+    #conteneurMot {
+        font-size: 1.8em;
+        letter-spacing: 5px;
+    }
+    
+    #conteneurLettres button {
+        width: 38px;
+        height: 38px;
+        font-size: 1em;
+    }
+    
+    .game-layout {
+        flex-direction: column;
+    }
+    
+    .pendu-svg {
+        width: 160px;
+        height: 200px;
+    }
+}

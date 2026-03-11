@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="style.css">
+        <title>Jeu du Pendu</title>
+    </head>
+    <body>
+        <!-- SECTION ACCUEIL -->
+        <section id="section-accueil">
+            <div class="container">
+                <h1>🎮 Jeu du Pendu</h1>
+                <p>Bienvenue ! Choisis ta difficulté et essaie de trouver le mot secret.</p>
+                <div class="select-wrapper">
+                    <label for="diffSelect">Difficulté :</label>
+                    <select id="diffSelect">
+                        <option value="facile">Facile (4-6 lettres)</option>
+                        <option value="moyen">Moyen (7-12 lettres)</option>
+                        <option value="difficile">Difficile (mots composés)</option>
+                    </select>
+                </div>
+                <button id="btnCommencer" class="btn btn-primary">Commencer</button>
+            </div>
+        </section>
+
+        <!-- SECTION JEU -->
+        <section id="section-jeu" class="hidden">
+            <div class="container">
+                <div class="game-layout">
+                    <!-- Dessin du pendu en SVG -->
+                    <div id="conteneurDessin">
+                        <svg viewBox="0 0 200 250" class="pendu-svg">
+                            <!-- Potence (toujours visible) -->
+                            <line x1="20" y1="230" x2="100" y2="230" class="potence"/> <!-- Base -->
+                            <line x1="60" y1="230" x2="60" y2="20" class="potence"/>  <!-- Poteau vertical -->
+                            <line x1="60" y1="20" x2="140" y2="20" class="potence"/>  <!-- Poteau horizontal -->
+                            <line x1="140" y1="20" x2="140" y2="50" class="potence"/> <!-- Corde -->
+                            
+                            <!-- Parties du corps (cachées par défaut) -->
+                            <circle cx="140" cy="70" r="20" class="partie-corps" id="tete"/>           <!-- Tête -->
+                            <line x1="140" y1="90" x2="140" y2="150" class="partie-corps" id="corps"/> <!-- Corps -->
+                            <line x1="140" y1="110" x2="110" y2="140" class="partie-corps" id="brasG"/> <!-- Bras gauche -->
+                            <line x1="140" y1="110" x2="170" y2="140" class="partie-corps" id="brasD"/> <!-- Bras droit -->
+                            <line x1="140" y1="150" x2="110" y2="200" class="partie-corps" id="jambeG"/> <!-- Jambe gauche -->
+                            <line x1="140" y1="150" x2="170" y2="200" class="partie-corps" id="jambeD"/> <!-- Jambe droite -->
+                        </svg>
+                    </div>
+                    
+                    <div class="game-info">
+                        <div id="conteneurMot"></div>
+                        <div id="affichageErreurs">Erreurs : 0 / 6</div>
+                    </div>
+                </div>
+                
+                <div id="conteneurLettres"></div>
+            </div>
+        </section>
+
+        <!-- SECTION RESULTAT -->
+        <section id="section-resultat" class="hidden">
+            <div class="container resultat-container">
+                <div id="messageFin"></div>
+                <div id="affichageMot"></div>
+                <div class="resultat-boutons">
+                    <button id="btnRejouer" class="btn btn-primary">🔄 Rejouer</button>
+                    <button id="btnAccueil" class="btn btn-secondary">🏠 Retour Accueil</button>
+                </div>
+            </div>
+        </section>
+
+        <script src="script.js"></script>
+    </body>
+</html>
