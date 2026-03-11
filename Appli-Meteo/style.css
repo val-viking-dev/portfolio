@@ -1,0 +1,164 @@
+/* ========== RESET & BASE ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #87CEEB, #5F9EA0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ========== HEADER ========== */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    color: white;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+}
+
+/* ========== FORMULAIRE RECHERCHE ========== */
+#formRecherche {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#cityInput {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 25px;
+    width: 250px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+#cityInput:focus {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#btnSearch {
+    padding: 12px 25px;
+    font-size: 1rem;
+    background-color: #4A90D9;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#btnSearch:hover {
+    background-color: #357ABD;
+    transform: translateY(-2px);
+}
+
+#btnGeo {
+    padding: 12px 20px;
+    font-size: 1rem;
+    background-color: #2ECC71;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#btnGeo:hover {
+    background-color: #27AE60;
+    transform: translateY(-2px);
+}
+
+/* ========== CARTE RÉSULTATS ========== */
+#results {
+    background: white;
+    border-radius: 20px;
+    padding: 30px 50px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+}
+
+#cityName {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+#weatherIcon {
+    width: 100px;
+    height: 100px;
+}
+
+#temperature {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #4A90D9;
+}
+
+#description {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 20px;
+    text-transform: capitalize;
+}
+
+/* ========== DÉTAILS ========== */
+#details {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+#details p {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+/* ========== LOADING ========== */
+#loading {
+    background: white;
+    border-radius: 20px;
+    padding: 30px 50px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+#loading p {
+    color: #4A90D9;
+    font-size: 1.2rem;
+}
+
+/* ========== ERREUR ========== */
+#error {
+    background: #ffebee;
+    border-radius: 20px;
+    padding: 20px 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+#errorMessage {
+    color: #c62828;
+    font-size: 1rem;
+}
+
+/* ========== UTILITAIRE ========== */
+.hidden {
+    display: none;
+}

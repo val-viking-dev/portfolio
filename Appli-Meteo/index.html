@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appli Meteo</title>
+    <link rel="stylesheet" href="style.css">
+   </head>
+   <body>
+        <header>
+            <h1>WeatherTool</h1>
+                <div id="formRecherche">
+                    <input id="cityInput" type="text" placeholder="Entrez ville">
+                    <ul id="autocomplete"></ul>
+                    <button id="btnSearch">Recherche</button>
+                    <button id="btnGeo">🌍Ma position</button>
+                </div>
+
+        </header>
+        <div id="loading" class="hidden">
+            <p>Chargement en cours ...</p>
+        </div>
+        <div id="error" class="hidden">
+            <p id="errorMessage"></p>
+        </div>
+        <div id="results" class="hidden">
+            <div id="cityName">
+
+            </div>
+            <img id ="weatherIcon" src="" alt="icône météo">
+
+            <div id="temperature">
+
+            </div>
+            <div id="description">
+
+            </div>
+            <div id="details">
+                <p id="humidity"></p>
+                <p id="wind"></p>
+                <p id="feelsLike"></p>
+            </div>
+        </div>
+        <script src="script.js"></script>
+   </body> 
+</html>

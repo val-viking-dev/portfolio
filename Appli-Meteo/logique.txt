@@ -1,0 +1,87 @@
+ Le concept général
+On va créer une application qui :
+
+Permet à l'utilisateur de chercher une ville
+Contact une API météo pour récupérer les données
+Affiche les informations de façon claire et stylée
+Bonus : propose l'autocomplete et géolocalisation
+
+ Les concepts clés à comprendre
+1. Qu'est-ce qu'une API ?
+Imagine un restaurant :
+
+Tu (le client) = ton application
+La cuisine = le serveur de l'API météo
+Le serveur = l'interface de l'API
+
+Tu ne vas pas en cuisine préparer ton plat. Tu demandes via le serveur (requête), et il te rapporte le plat (réponse). C'est exactement pareil avec une API !
+2. L'asynchrone (async/await)
+Tu as déjà utilisé ça dans ton quiz ! Mais ici c'est crucial car on attend une réponse d'un serveur externe. Pendant l'attente, ton application ne doit pas se bloquer.
+3. La structure de données JSON
+L'API va te renvoyer un gros objet avec plein d'infos. Il faudra savoir naviguer dedans pour extraire ce qui t'intéresse (température, description, icône, etc.)
+
+
+ Comment on s'organise ? (MVP First!)
+Phase 1 - Le minimum viable :
+
+Un champ de recherche (input)
+Un bouton "Rechercher"
+Affichage simple : ville, température, description
+
+Phase 2 - Améliorer l'UX :
+
+Icônes météo dynamiques
+Plus d'infos (humidité, vent, etc.)
+Style agréable
+
+Phase 3 - Fonctionnalités avancées :
+
+Autocomplete des villes
+Géolocalisation (météo de ta position actuelle)
+Historique des dernières recherches
+
+ À quoi réfléchir AVANT de coder ?
+Question 1 : Quelle API utiliser ?
+Il y a plusieurs APIs météo gratuites. Il faut choisir celle qui :
+
+Ne nécessite pas de carte bancaire
+A une documentation claire
+Propose un nombre de requêtes suffisant par jour
+
+Question 2 : Comment gérer les erreurs ?
+
+Et si l'utilisateur tape une ville qui n'existe pas ?
+Et si l'API ne répond pas (problème réseau) ?
+Et si l'utilisateur ne donne pas la permission de géolocalisation ?
+
+Ton app doit être robuste et ne jamais planter.
+Question 3 : Quelle structure HTML ?
+Pense à :
+
+Où mettre le formulaire de recherche ?
+Où afficher les résultats ?
+Comment organiser les différentes infos météo ?
+
+Question 4 : Expérience utilisateur
+
+Montrer un loading pendant que l'API répond ?
+Afficher un message d'erreur clair ?
+Permettre de relancer une recherche facilement ?
+
+ Organisation du projet
+météo/
+index.html      → Structure de la page
+style.css       → Le style (on va faire quelque chose de beau !)
+script.js       → Toute la logique JavaScript
+
+
+ Les étapes logiques
+
+Choisir et comprendre l'API (on va regarder la doc ensemble)
+Créer la structure HTML (simple d'abord)
+Faire la première requête API (juste afficher la réponse brute dans la console)
+Extraire les données utiles (comprendre la structure JSON)
+Afficher les données (manipuler le DOM)
+Gérer les erreurs (try/catch et messages clairs)
+Styler l'application (CSS pour rendre ça pro)
+Ajouter les bonus (autocomplete, géoloc, icônes)
