@@ -1,120 +1,777 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mon Portfolio</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                max-width: 900px;
-                margin: 50px auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
-            h1 {
-                color: #333;
-                text-align: center;
-            }
-            .intro {
-                text-align: center;
-                margin-bottom: 40px;
-                color: #666;
-            }
-            .projets {
-                background-color: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .projet {
-                margin-bottom: 25px;
-                padding-bottom: 25px;
-                border-bottom: 1px solid #eee;
-            }
-            .projet:last-child {
-                border-bottom: none;
-            }
-            .projet h3 {
-                color: #2c3e50;
-                margin-bottom: 10px;
-            }
-            .projet p {
-                color: #666;
-                margin-bottom: 10px;
-            }
-            .projet a {
-                display: inline-block;
-                background-color: #3498db;
-                color: white;
-                padding: 10px 20px;
-                text-decoration: none;
-                border-radius: 5px;
-                transition: background-color 0.3s;
-            }
-            .projet a:hover {
-                background-color: #2980b9;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Bonjour.</h1>
-        <p class="intro">Bienvenue sur mon portfolio ! Cette page a été crée afin de montrer les projets crées durant ma recherche d'apprentissage.</p>
-        
-        <div class="projets">
-            <h2>Mes Projets</h2>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentin — Développeur d'Applications</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:         #0a0e1a;
+            --bg2:        #111827;
+            --bg3:        #1a2235;
+            --accent:     #f97316;
+            --accent2:    #fb923c;
+            --teal:       #14b8a6;
+            --text:       #e2e8f0;
+            --muted:      #94a3b8;
+            --border:     rgba(255,255,255,0.07);
+            --card-glow:  rgba(249,115,22,0.06);
+        }
 
-            <div class="projet">
-            <h3> ToolWing - Système d'Inventaire Automatique</h3>
-                <p>Application web professionnelle de gestion d'inventaire pour Airbus Meaulte (XWB BARQUE Operations). Automatisation complète du suivi de 11 mallettes d'outillage avec rapports hebdomadaires automatiques, dashboard temps réel et notifications intelligentes.</p>
-                <p><strong>Impact :</strong> Gain de 10h/semaine, traçabilité 100%, taux de conformité en temps réel</p>
-                <p><strong>Technologies :</strong> Google Apps Script, JavaScript ES6+, HTML5/CSS3, Google Sheets API, Gmail API</p>
-                <p><strong>Client :</strong> Ingénieur Projet Alten (prestation Airbus)</p>
-                <a href="https://script.google.com/macros/s/AKfycbz7zks-xMHS8sdX1G44sKxRqMGtgoCRgwQEcfj77tFifRx6kOo0AV8fOOEctzRCjieh/exec" target="_blank">Voir la page d'accueil</a>
-            </div>
-            
-            <div class="projet">
-                <h3> Calculatrice Interactive</h3>
-                <p>Une calculatrice avec historique des opérations et design moderne.</p>
-                <p><strong>Technologies :</strong> HTML, CSS, JavaScript</p>
-                <a href="../Calculatrice/index.html" target="_blank">Voir le projet</a>
-            </div>
-            
-            <div class="projet">
-                <h3> Gestionnaire de Tâches</h3>
-                <p>Application de gestion de tâches avec filtres, tri et sauvegarde locale.</p>
-                <p><strong>Technologies :</strong> HTML, CSS, JavaScript, localStorage</p>
-                <a href="../ToDoList/Index.html" target="_blank">Voir le projet</a>
-            </div>
-            
-            <div class="projet">
-                <h3> Analyseur de Fichiers</h3>
-                <p>Script Python pour analyser et compter les lignes de code dans des fichiers texte.</p>
-                <p><strong>Technologies :</strong> Python</p>
-                <a href="../Defi4-Analyseur/analyseur.py" target="_blank">Voir le code</a>
-            </div>
-            
-            <div class="projet">
-                <h3> Quiz de Culture Générale</h3>
-                <p>Quiz interactif avec chronomètre, feedback en temps réel et historique des scores.</p>
-                <p><strong>Technologies :</strong> HTML, CSS, JavaScript, localStorage, JSON</p>
-                <a href="../Quiz/index.html" target="_blank">Voir le projet</a>
-            </div>
-                <div class="projet">
-                <h3> Application Météo</h3>
-                <p>Application météo interactive avec recherche de villes, géolocalisation automatique et suggestions en temps réel via l'API OpenWeatherMap.</p>
-                <p><strong>Fonctionnalités :</strong> Autocomplete, navigation clavier, géolocalisation, gestion d'erreurs personnalisée</p>
-                <p><strong>Technologies :</strong> HTML5, CSS3, JavaScript ES6+, API REST, Fetch API, Geolocation API</p>
-                <a href="../Appli-Meteo/index.html" target="_blank">Voir le projet</a>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── NOISE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            opacity: .5;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── GRID BG ── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(249,115,22,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(249,115,22,.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 60px;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color .2s;
+        }
+
+        .nav-links a:hover { color: var(--accent); }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 120px 60px 80px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .hero-eyebrow {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--teal);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+            opacity: 0;
+            animation: fadeUp .6s ease forwards .1s;
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.8rem, 7vw, 5.5rem);
+            line-height: 1.0;
+            letter-spacing: -0.03em;
+            margin-bottom: 28px;
+            opacity: 0;
+            animation: fadeUp .7s ease forwards .25s;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--accent2), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: 1.15rem;
+            color: var(--muted);
+            max-width: 560px;
+            line-height: 1.7;
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: fadeUp .7s ease forwards .4s;
+        }
+
+        .hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 56px;
+            opacity: 0;
+            animation: fadeUp .7s ease forwards .55s;
+        }
+
+        .tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            padding: 6px 14px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            background: var(--bg3);
+            letter-spacing: 0.04em;
+            transition: all .2s;
+        }
+
+        .tag:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeUp .7s ease forwards .7s;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #0a0e1a;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 14px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            transition: all .2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(249,115,22,.35);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 14px 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: all .2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* ── SCROLL INDICATOR ── */
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp .6s ease forwards 1s;
+        }
+
+        .scroll-line {
+            width: 48px;
+            height: 1px;
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        /* ── GLOW ORBS ── */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(249,115,22,.15), transparent);
+            top: 15%; right: -100px;
+        }
+
+        .orb-2 {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(20,184,166,.1), transparent);
+            top: 55%; left: -80px;
+        }
+
+        /* ── SECTION WRAPPER ── */
+        .section {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 60px;
+        }
+
+        .section-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            letter-spacing: -0.03em;
+            margin-bottom: 56px;
+            color: var(--text);
+        }
+
+        /* ── PROJECTS GRID ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all .3s ease;
+            cursor: default;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--card-glow);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .project-card:hover {
+            border-color: rgba(249,115,22,.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,.4);
+        }
+
+        .project-card:hover::before { opacity: 1; }
+
+        .project-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border-color: rgba(249,115,22,.2);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .card-badge {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.65rem;
+            padding: 4px 10px;
+            border-radius: 100px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .badge-prod {
+            background: rgba(20,184,166,.15);
+            color: var(--teal);
+            border: 1px solid rgba(20,184,166,.3);
+        }
+
+        .badge-pro {
+            background: rgba(249,115,22,.12);
+            color: var(--accent);
+            border: 1px solid rgba(249,115,22,.25);
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 12px;
+        }
+
+        .card-impact {
+            font-size: 0.82rem;
+            color: var(--teal);
+            font-weight: 500;
+            margin-bottom: 18px;
+            padding: 8px 12px;
+            background: rgba(20,184,166,.07);
+            border-radius: 6px;
+            border-left: 2px solid var(--teal);
+        }
+
+        .card-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 22px;
+        }
+
+        .tech-pill {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            padding: 3px 10px;
+            background: var(--bg3);
+            border-radius: 4px;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--accent);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: gap .2s, color .2s;
+        }
+
+        .card-link:hover { gap: 10px; color: var(--accent2); }
+
+        /* ── ABOUT ── */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .about-text p {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.8;
+            margin-bottom: 18px;
+        }
+
+        .about-text strong { color: var(--text); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* ── DIVIDER ── */
+        .divider {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 60px;
+        }
+
+        .divider hr {
+            border: none;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer p {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .footer-links a:hover { color: var(--accent); }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            nav { padding: 16px 24px; }
+            .nav-links { display: none; }
+            .hero, .section { padding-left: 24px; padding-right: 24px; }
+            .hero h1 { font-size: 2.6rem; }
+            .project-card.featured { grid-column: span 1; }
+            .about-grid { grid-template-columns: 1fr; }
+            footer { flex-direction: column; gap: 16px; text-align: center; }
+            .scroll-hint { left: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">VD_DEV</div>
+        <ul class="nav-links">
+            <li><a href="#projets">Projets</a></li>
+            <li><a href="#about">À propos</a></li>
+            <li><a href="https://github.com/val-viking-dev" target="_blank">GitHub ↗</a></li>
+        </ul>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+
+        <p class="hero-eyebrow">// Disponible pour une alternance</p>
+        <h1>Valentin<br><span>Développeur</span><br>d'Applications</h1>
+        <p class="hero-sub">
+            En reconversion depuis la maintenance industrielle vers le développement.
+            Je construis des outils qui automatisent, qui durent, et qui font gagner du temps.
+        </p>
+
+        <div class="hero-tags">
+            <span class="tag">JavaScript ES6+</span>
+            <span class="tag">Google Apps Script</span>
+            <span class="tag">HTML5 / CSS3</span>
+            <span class="tag">Python</span>
+            <span class="tag">PWA / Capacitor</span>
+            <span class="tag">Google Sheets API</span>
+        </div>
+
+        <div class="hero-cta">
+            <a href="#projets" class="btn-primary">Voir mes projets →</a>
+            <a href="https://github.com/val-viking-dev" target="_blank" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.6-4.04-1.6-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.24 1.9 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+
+        <div class="scroll-hint">
+            <div class="scroll-line"></div>
+            Scroll
+        </div>
+    </section>
+
+    <div class="divider"><hr></div>
+
+    <!-- PROJETS -->
+    <section class="section" id="projets">
+        <p class="section-label reveal">// 01 — Réalisations</p>
+        <h2 class="section-title reveal">Mes Projets</h2>
+
+        <div class="projects-grid">
+
+            <!-- TOOLWING - Featured -->
+            <div class="project-card featured reveal">
+                <span class="card-badge badge-pro">Professionnel</span>
+                <span class="card-icon">🔧</span>
+                <h3 class="card-title">ToolWing — Inventaire Automatique</h3>
+                <p class="card-desc">Application web professionnelle de gestion d'inventaire pour Airbus (XWB BARQUE Operations). Automatisation complète du suivi de 11 mallettes d'outillage avec dashboard temps réel et notifications intelligentes.</p>
+                <p class="card-impact">⚡ Gain de 10h/semaine · Traçabilité 100% · Taux de conformité temps réel</p>
+                <div class="card-tech">
+                    <span class="tech-pill">Google Apps Script</span>
+                    <span class="tech-pill">JavaScript ES6+</span>
+                    <span class="tech-pill">Google Sheets API</span>
+                    <span class="tech-pill">Gmail API</span>
+                    <span class="tech-pill">HTML5 / CSS3</span>
+                </div>
+                <a class="card-link" href="https://github.com/val-viking-dev/portfolio/blob/main/ToolWing/README.md" target="_blank">Voir la documentation →</a>
             </div>
 
-            <div class="projet">
-                <h3> Garden-Helper</h3>
-                <p>Application mobile de jardinage permettant de planifier et suivre ses cultures. Interface intuitive avec calendrier de semis, fiches plantes et notifications de rappel.</p>
-                <p><strong>Statut :</strong> Version 1.9.3 - En préparation pour publication Google Play Store</p>
-                <p><strong>Technologies :</strong> HTML5, CSS3, JavaScript, Capacitor, Touch Events, Haptic Feedback</p>
-                <p>Projet Disponible sur le Google Play Store</p>
+            <!-- GARDEN HELPER -->
+            <div class="project-card reveal">
+                <span class="card-badge badge-prod">Play Store</span>
+                <span class="card-icon">🌱</span>
+                <h3 class="card-title">Garden-Helper</h3>
+                <p class="card-desc">Application PWA de gestion de potager publiée sur Google Play. Bibliothèque de variétés, générateur de jardin automatique, gestion des sols NPK, notifications de soins.</p>
+                <p class="card-impact">⚡ Publié sur Google Play Store · 58 variétés de légumes</p>
+                <div class="card-tech">
+                    <span class="tech-pill">PWA</span>
+                    <span class="tech-pill">Capacitor</span>
+                    <span class="tech-pill">JavaScript</span>
+                    <span class="tech-pill">HTML5 / CSS3</span>
+                </div>
+                <a class="card-link" href="https://github.com/val-viking-dev/portfolio" target="_blank">Voir le projet →</a>
+            </div>
+
+            <!-- QUIZ -->
+            <div class="project-card reveal">
+                <span class="card-icon">🎮</span>
+                <h3 class="card-title">Quiz de Culture Générale</h3>
+                <p class="card-desc">Quiz interactif avec chronomètre, feedback en temps réel et historique des scores persistant.</p>
+                <div class="card-tech">
+                    <span class="tech-pill">JavaScript</span>
+                    <span class="tech-pill">JSON</span>
+                    <span class="tech-pill">localStorage</span>
+                </div>
+                <a class="card-link" href="../Quiz/index.html" target="_blank">Voir le projet →</a>
+            </div>
+
+            <!-- TODO -->
+            <div class="project-card reveal">
+                <span class="card-icon">✅</span>
+                <h3 class="card-title">Gestionnaire de Tâches</h3>
+                <p class="card-desc">Application de gestion de tâches avec filtres avancés, tri et sauvegarde locale.</p>
+                <div class="card-tech">
+                    <span class="tech-pill">JavaScript</span>
+                    <span class="tech-pill">localStorage</span>
+                    <span class="tech-pill">CSS3</span>
+                </div>
+                <a class="card-link" href="../ToDoList/index.html" target="_blank">Voir le projet →</a>
+            </div>
+
+            <!-- CALCULATRICE -->
+            <div class="project-card reveal">
+                <span class="card-icon">🧮</span>
+                <h3 class="card-title">Calculatrice Interactive</h3>
+                <p class="card-desc">Calculatrice avec historique des opérations et design moderne.</p>
+                <div class="card-tech">
+                    <span class="tech-pill">HTML</span>
+                    <span class="tech-pill">CSS</span>
+                    <span class="tech-pill">JavaScript</span>
+                </div>
+                <a class="card-link" href="../Calculatrice/index.html" target="_blank">Voir le projet →</a>
+            </div>
+
+            <!-- ANALYSEUR -->
+            <div class="project-card reveal">
+                <span class="card-icon">📁</span>
+                <h3 class="card-title">Analyseur de Fichiers</h3>
+                <p class="card-desc">Script Python pour analyser et compter les lignes de code dans des fichiers texte.</p>
+                <div class="card-tech">
+                    <span class="tech-pill">Python</span>
+                </div>
+                <a class="card-link" href="../Defi4-Analyseur/analyseur.py" target="_blank">Voir le code →</a>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="divider"><hr></div>
+
+    <!-- ABOUT -->
+    <section class="section" id="about">
+        <p class="section-label reveal">// 02 — Parcours</p>
+        <h2 class="section-title reveal">À propos</h2>
+
+        <div class="about-grid">
+            <div class="about-text reveal">
+                <p>
+                    Avant d'écrire du code, j'entrouvrais des <strong>portes d'ascenseurs</strong>.
+                    Technicien de maintenance chez SCHINDLER puis OTIS, j'ai appris à diagnostiquer, à optimiser,
+                    et à toujours livrer quelque chose qui fonctionne — même sous contrainte.
+                </p>
+                <p>
+                    Cette rigueur du terrain, je l'ai apportée dans le développement.
+                    Aujourd'hui en apprentissage <strong>Concepteur / Développeur d'Applications (AFPA)</strong>,
+                    je construis des outils concrets qui automatisent des processus réels,
+                    comme la suite industrielle que j'ai développée pour Airbus.
+                </p>
+                <p>
+                    Je cherche une alternance où je peux continuer à apprendre vite
+                    et livrer des outils qui ont un <strong>impact mesurable</strong>.
+                </p>
+            </div>
+
+            <div class="stat-grid reveal">
+                <div class="stat-card">
+                    <div class="stat-num">10h</div>
+                    <div class="stat-label">/ semaine économisées<br>chez Airbus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">1</div>
+                    <div class="stat-label">app publiée<br>sur Play Store</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">29</div>
+                    <div class="stat-label">ans · reconversion<br>réussie</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-num">6+</div>
+                    <div class="stat-label">projets livrés<br>et fonctionnels</div>
+                </div>
             </div>
         </div>
-    </body>
+    </section>
+
+    <div class="divider"><hr></div>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Valentin · Développeur d'Applications</p>
+        <div class="footer-links">
+            <a href="https://github.com/val-viking-dev" target="_blank">GitHub</a>
+            <a href="mailto:valentin@example.com">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, i * 60);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+
+</body>
 </html>
